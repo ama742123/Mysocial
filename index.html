@@ -83,8 +83,7 @@
       </button>
     </nav>
   </header>
-
-  <!-- Auth Container -->
+    <!-- Auth Container -->
   <div id="auth-container" class="max-w-md mx-auto my-6 p-6 bg-white rounded-xl shadow-sm border border-gray-100">
     <div class="text-center mb-5">
       <h2 class="text-2xl font-extrabold text-blue-600" id="auth-title">Welcome to mysocial</h2>
@@ -121,7 +120,8 @@
       <button onclick="showForgotPassword()" id="forgot-password-btn" class="text-gray-500 hover:text-blue-600 hover:underline">Forgot password?</button>
     </div>
   </div>
-    <!-- App Content -->
+
+  <!-- App Content -->
   <div id="app-content" class="hidden">
     <!-- Home Tab -->
     <main id="view-home" class="max-w-md mx-auto p-2 space-y-3">
@@ -148,8 +148,7 @@
         <button id="load-more-btn" onclick="loadPersonalizedFeed(false)" class="hidden bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-full font-semibold hover:bg-gray-300">Load More Posts</button>
       </div>
     </main>
-
-    <!-- Reels Tab -->
+        <!-- Reels Tab -->
     <div id="view-reels" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-black relative overflow-hidden flex flex-col">
       <div class="absolute top-2 right-4 z-30">
         <button onclick="openUploadModal()" class="bg-white/25 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1.5 hover:bg-white/35 transition shadow-sm">
@@ -189,9 +188,15 @@
     </div>
 
     <!-- Notifications Tab -->
-    <div id="view-notifications" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm text-center">
-      <h2 class="text-lg font-bold">Notifications</h2>
-      <p class="text-sm text-gray-500 mt-2">No new notifications.</p>
+    <div id="view-notifications" class="hidden max-w-md mx-auto p-2 space-y-2">
+      <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
+        <h2 class="text-sm font-bold text-gray-800"><i class="fa-solid fa-bell text-blue-600 mr-1"></i> Notifications</h2>
+        <button onclick="markAllNotificationsRead()" class="text-[11px] text-blue-600 font-semibold hover:underline">Mark all as read</button>
+      </div>
+
+      <div id="notifications-container" class="space-y-2">
+        <p class="text-center text-xs text-gray-400 py-4">Loading notifications...</p>
+      </div>
     </div>
 
     <!-- Settings Tab -->
@@ -206,7 +211,7 @@
       </div>
     </div>
   </div>
-    <!-- Firebase & App Logic Engine (Part A) -->
+    <!-- Firebase & App Logic Engine (Part 4.1) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
@@ -379,6 +384,7 @@
         } else {
           userProfile.following.push(targetUid);
           await updateDoc(userRef, { following: arrayUnion(targetUid) });
+          sendNotification(targetUid, `${currentUser.displayName || 'Someone'} started following you.`, 'follow');
         }
         loadSuggestedUsers();
         loadPersonalizedFeed(true);
@@ -386,7 +392,8 @@
         alert("Follow action failed: " + e.message);
       }
     };
-        async function loadSuggestedUsers() {
+
+    async function loadSuggestedUsers() {
       const container = document.getElementById('suggested-users-container');
       if (!container) return;
       container.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">Loading users...</p>`;
@@ -450,8 +457,7 @@
 
       return followScore + recencyScore + engagementScore + affinityScore;
     }
-
-    window.loadPersonalizedFeed = async (isReset = false) => {
+        window.loadPersonalizedFeed = async (isReset = false) => {
       const postsContainer = document.getElementById('posts-container');
       const loadMoreBtn = document.getElementById('load-more-btn');
       
@@ -550,12 +556,12 @@
           <div class="flex justify-around py-1 text-xs text-gray-500 border-t mt-1">
             <div class="relative group w-full text-center py-1">
               <div class="reaction-box space-x-1">
-                <button onclick="reactToPost('${post.id}', 'like')" class="hover:scale-125 transition">👍</button>
-                <button onclick="reactToPost('${post.id}', 'love')" class="hover:scale-125 transition">❤️</button>
-                <button onclick="reactToPost('${post.id}', 'haha')" class="hover:scale-125 transition">😆</button>
-                <button onclick="reactToPost('${post.id}', 'wow')" class="hover:scale-125 transition">😮</button>
-                <button onclick="reactToPost('${post.id}', 'sad')" class="hover:scale-125 transition">😢</button>
-                <button onclick="reactToPost('${post.id}', 'angry')" class="hover:scale-125 transition">😡</button>
+                <button onclick="reactToPost('${post.id}', '${authorId}', 'like')" class="hover:scale-125 transition">👍</button>
+                <button onclick="reactToPost('${post.id}', '${authorId}', 'love')" class="hover:scale-125 transition">❤️</button>
+                <button onclick="reactToPost('${post.id}', '${authorId}', 'haha')" class="hover:scale-125 transition">😆</button>
+                <button onclick="reactToPost('${post.id}', '${authorId}', 'wow')" class="hover:scale-125 transition">😮</button>
+                <button onclick="reactToPost('${post.id}', '${authorId}', 'sad')" class="hover:scale-125 transition">😢</button>
+                <button onclick="reactToPost('${post.id}', '${authorId}', 'angry')" class="hover:scale-125 transition">😡</button>
               </div>
               <button class="w-full font-semibold ${myReaction ? 'text-blue-600' : 'hover:text-blue-600'}">
                 ${myReaction ? reactionIcons[myReaction] + ' ' + myReaction.toUpperCase() : '<i class="fa-regular fa-thumbs-up"></i> Like'}
@@ -573,7 +579,7 @@
           <div id="comments-${post.id}" class="hidden pt-2 border-t mt-2 space-y-2">
             <div class="flex space-x-2">
               <input type="text" id="comment-input-${post.id}" placeholder="Write a comment..." class="w-full bg-gray-100 rounded-full px-3 py-1 text-xs outline-none border focus:bg-white">
-              <button onclick="addComment('${post.id}')" class="bg-blue-600 text-white px-3 py-1 rounded-xs text-xs font-semibold">Send</button>
+              <button onclick="addComment('${post.id}', '${authorId}')" class="bg-blue-600 text-white px-3 py-1 rounded-xs text-xs font-semibold">Send</button>
             </div>
             <div id="comment-list-${post.id}" class="space-y-1.5 pt-1"></div>
           </div>
@@ -637,10 +643,13 @@
       }
     };
 
-    window.reactToPost = async (postId, reactionType) => {
+    window.reactToPost = async (postId, authorId, reactionType) => {
       if (!currentUser) return;
       try {
         await updateDoc(doc(db, "posts", postId), { [`reactions.${currentUser.uid}`]: reactionType });
+        if (authorId !== currentUser.uid) {
+          sendNotification(authorId, `${currentUser.displayName || 'Someone'} reacted to your post.`, 'like');
+        }
       } catch (e) {
         console.error("Reaction error:", e);
       }
@@ -650,7 +659,7 @@
       document.getElementById(`comments-${postId}`)?.classList.toggle('hidden');
     };
 
-    window.addComment = async (postId) => {
+    window.addComment = async (postId, authorId) => {
       const input = document.getElementById(`comment-input-${postId}`);
       const text = input.value.trim();
       if (!text) return;
@@ -664,6 +673,9 @@
         });
         await updateDoc(doc(db, "posts", postId), { commentCount: increment(1) });
         input.value = "";
+        if (authorId !== currentUser.uid) {
+          sendNotification(authorId, `${currentUser.displayName || 'Someone'} commented on your post.`, 'comment');
+        }
       } catch (e) {
         alert("Comment failed: " + e.message);
       }
@@ -678,8 +690,7 @@
         console.error("Share count error:", e);
       }
     };
-
-    // Reels Logic
+        // Reels Logic
     window.openUploadModal = () => {
       document.getElementById('reel-upload-modal').classList.remove('hidden');
     };
@@ -794,6 +805,99 @@
       alert("Reel link copied!");
     };
 
+    // Notifications Logic
+    window.loadNotifications = async () => {
+      const container = document.getElementById('notifications-container');
+      if (!container || !currentUser) return;
+
+      try {
+        const q = query(
+          collection(db, "users", currentUser.uid, "notifications"), 
+          orderBy("createdAt", "desc"), 
+          limit(20)
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          container.innerHTML = `<div class="bg-white p-6 rounded-lg text-center text-xs text-gray-400 shadow-sm border border-gray-200">No new notifications.</div>`;
+          return;
+        }
+
+        container.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          const notif = docSnap.data();
+          const notifId = docSnap.id;
+          const isUnread = !notif.read;
+
+          let icon = "fa-bell text-blue-600";
+          if (notif.type === 'like') icon = "fa-heart text-red-500";
+          if (notif.type === 'comment') icon = "fa-comment text-green-500";
+          if (notif.type === 'follow') icon = "fa-user-plus text-purple-500";
+
+          const notifHtml = `
+            <div onclick="markNotificationRead('${notifId}')" class="flex items-center justify-between p-3 bg-white rounded-lg border ${isUnread ? 'border-blue-300 bg-blue-50/30' : 'border-gray-200'} shadow-sm text-xs cursor-pointer transition">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                  <i class="fa-solid ${icon}"></i>
+                </div>
+                <div>
+                  <p class="text-gray-800 font-medium">${notif.message}</p>
+                  <span class="text-[10px] text-gray-400">Just now</span>
+                </div>
+              </div>
+              ${isUnread ? '<span class="w-2 h-2 rounded-full bg-blue-600"></span>' : ''}
+            </div>
+          `;
+          container.innerHTML += notifHtml;
+        });
+      } catch (e) {
+        console.error("Error loading notifications:", e);
+        container.innerHTML = `<div class="bg-white p-4 rounded-lg text-center text-xs text-red-400">Failed to load notifications.</div>`;
+      }
+    };
+
+    window.markNotificationRead = async (notifId) => {
+      if (!currentUser) return;
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid, "notifications", notifId), {
+          read: true
+        });
+        loadNotifications();
+      } catch (e) {
+        console.error("Error updating notification:", e);
+      }
+    };
+
+    window.markAllNotificationsRead = async () => {
+      if (!currentUser) return;
+      try {
+        const snapshot = await getDocs(collection(db, "users", currentUser.uid, "notifications"));
+        snapshot.forEach(async (docSnap) => {
+          await updateDoc(doc(db, "users", currentUser.uid, "notifications", docSnap.id), {
+            read: true
+          });
+        });
+        loadNotifications();
+      } catch (e) {
+        console.error("Error marking all read:", e);
+      }
+    };
+
+    async function sendNotification(targetUserId, message, type) {
+      if (!currentUser || targetUserId === currentUser.uid) return;
+      try {
+        await addDoc(collection(db, "users", targetUserId, "notifications"), {
+          message: message,
+          type: type,
+          read: false,
+          createdAt: serverTimestamp()
+        });
+      } catch (e) {
+        console.error("Error sending notification:", e);
+      }
+    }
+
+    // Tab Switcher
     window.switchTab = (tabName) => {
       ['home', 'reels', 'friends', 'notifications', 'settings'].forEach(t => {
         document.getElementById('view-' + t)?.classList.add('hidden');
@@ -804,10 +908,10 @@
 
       if (tabName === 'reels') {
         loadReelsFeed();
+      } else if (tabName === 'notifications') {
+        loadNotifications();
       }
     };
   </script>
 </body>
 </html>
-
-  
