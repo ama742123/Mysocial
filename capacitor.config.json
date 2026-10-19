@@ -4,7 +4,7 @@
   "webDir": ".",
   "bundledWebRuntime": false,
   "server": {
-    "url": "https://ama742123.github.io/mysocial",
+    "url": "https://ama742123.github.io/Mysocial",
     "cleartext": true
   }
 }
