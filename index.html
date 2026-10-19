@@ -12,8 +12,45 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    /* প্রতিক্রিয়া বক্সের অ্যানিমেশন ও পপ-আপ স্টাইল */
+    /* ফেসবুক স্টাইল স্প্ল্যাশ স্ক্রিন ও লোগো অ্যানিমেশন */
+    @keyframes logoPop {
+      0% {
+        transform: scale(0.6);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.05);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes textFadeUp {
+      0% {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-logo {
+      animation: logoPop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .animate-text {
+      animation: textFadeUp 1s ease-out 0.4s forwards;
+      opacity: 0;
+    }
+
+    /* রিকশন বক্স স্টাইল */
     .reaction-box {
       display: none;
       position: absolute;
@@ -32,6 +69,22 @@
 </head>
 <body class="bg-gray-100 text-gray-800 pb-12">
 
+  <!-- ================= ফেসবুক-স্টাইল ইউনিক স্প্ল্যাশ স্ক্রিন ================= -->
+  <div id="splash-screen" class="fixed inset-0 bg-white z-[100] flex flex-col justify-between items-center py-12 transition-opacity duration-500">
+    <div></div>
+    <div class="flex flex-col items-center animate-logo">
+      <div class="w-20 h-20 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex items-center justify-center bg-blue-600">
+        <div class="text-white font-extrabold text-4xl tracking-tighter flex items-center justify-center">
+          M<span class="text-2xl font-light">i</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col items-center animate-text space-y-1">
+      <span class="text-[11px] text-gray-400 font-medium tracking-widest uppercase">from</span>
+      <h1 class="text-xl font-black text-blue-600 tracking-wider">mysocial</h1>
+    </div>
+  </div>
+
   <!-- ================= হেডার ও টপ নেভিগেশন ================= -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
     <div class="px-4 py-2.5 flex justify-between items-center">
@@ -42,7 +95,6 @@
       </div>
     </div>
 
-    <!-- টপ নেভিগেশন বার -->
     <nav class="flex justify-around border-t border-gray-100 text-gray-500 font-medium">
       <button onclick="switchTab('home')" id="nav-home" class="w-full py-2.5 text-blue-600 border-b-2 border-blue-600 flex justify-center items-center">
         <i class="fa-solid fa-house text-xl"></i>
@@ -62,7 +114,7 @@
     </nav>
   </header>
 
-  <!-- ================= সম্পূর্ণ অথেনটিকেশন ফর্ম (Login / Register) ================= -->
+  <!-- Auth Container -->
   <div id="auth-container" class="max-w-md mx-auto my-6 p-6 bg-white rounded-xl shadow-sm border border-gray-100">
     <div class="text-center mb-5">
       <h2 class="text-2xl font-extrabold text-blue-600" id="auth-title">Welcome to mysocial</h2>
@@ -85,9 +137,7 @@
         </button>
       </div>
       
-      <button onclick="handleAuth()" id="auth-submit-btn" class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition">
-        Log In
-      </button>
+      <button onclick="handleAuth()" id="auth-submit-btn" class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition">Log In</button>
       
       <div class="flex items-center my-3">
         <div class="flex-grow border-t border-gray-200"></div>
@@ -107,93 +157,72 @@
     </div>
   </div>
 
-  <!-- ================= অ্যাপ কন্টেন্ট ================= -->
+  <!-- App Content -->
   <div id="app-content" class="hidden">
-    <!-- ট্যাব ১: হোম ফিড -->
     <main id="view-home" class="max-w-md mx-auto p-2 space-y-3">
-      
-      <!-- পোস্ট করার বক্স -->
       <div class="bg-white p-3 rounded-lg shadow-sm space-y-2 border border-gray-200">
         <div class="flex items-center space-x-2">
           <div id="user-avatar" class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">U</div>
-          <input type="text" id="post-input" placeholder="What's on your mind?" data-i18n="whatIsOnYourMind" class="w-full bg-gray-100 rounded-full px-4 py-2 text-sm outline-none border hover:bg-gray-200 focus:bg-white focus:border-blue-500 transition">
+          <input type="text" id="post-input" placeholder="What's on your mind?" class="w-full bg-gray-100 rounded-full px-4 py-2 text-sm outline-none border hover:bg-gray-200 focus:bg-white focus:border-blue-500 transition">
         </div>
         <div class="flex justify-end pt-1">
           <button onclick="createPost()" class="bg-blue-600 text-white px-5 py-1.5 rounded-full text-xs font-bold hover:bg-blue-700 transition">Post</button>
         </div>
       </div>
 
-      <!-- রিয়েলটাইম পোস্ট ফিড -->
+      <div class="flex justify-between items-center px-1 text-xs text-gray-500">
+        <span class="font-semibold"><i class="fa-solid fa-sliders text-blue-600 mr-1"></i> Personalized Feed</span>
+        <button onclick="loadPersonalizedFeed(true)" class="hover:text-blue-600"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+      </div>
+
       <div id="posts-container" class="space-y-3">
-        <p class="text-center text-xs text-gray-400 py-4">Loading posts...</p>
+        <p class="text-center text-xs text-gray-400 py-4">Loading your personalized feed...</p>
+      </div>
+
+      <div class="text-center pt-2">
+        <button id="load-more-btn" onclick="loadPersonalizedFeed(false)" class="hidden bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-full font-semibold hover:bg-gray-300">Load More Posts</button>
       </div>
     </main>
 
-    <!-- ট্যাব ২: রিলস -->
     <div id="view-reels" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-black text-center text-white flex flex-col items-center justify-center">
       <i class="fa-solid fa-clapperboard text-5xl mb-3 text-gray-400"></i>
-      <p class="text-sm text-gray-300" data-i18n="reelsComingSoon">Reels video feed coming soon...</p>
+      <p class="text-sm text-gray-300">Reels video feed coming soon...</p>
     </div>
 
-    <!-- ট্যাব ৩: ফ্রেন্ডস -->
     <div id="view-friends" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm text-center">
-      <h2 class="text-lg font-bold" data-i18n="friendsTitle">Friend Requests</h2>
-      <p class="text-sm text-gray-500 mt-2" data-i18n="noFriends">No new requests found.</p>
+      <h2 class="text-lg font-bold">Friend Requests</h2>
+      <p class="text-sm text-gray-500 mt-2">No new requests found.</p>
     </div>
 
-    <!-- ট্যাব ৪: নোটিফিকেশন -->
     <div id="view-notifications" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm text-center">
-      <h2 class="text-lg font-bold" data-i18n="notifTitle">Notifications</h2>
-      <p class="text-sm text-gray-500 mt-2" data-i18n="noNotif">No new notifications.</p>
+      <h2 class="text-lg font-bold">Notifications</h2>
+      <p class="text-sm text-gray-500 mt-2">No new notifications.</p>
     </div>
 
-    <!-- ট্যাব ৫: সেটিংস -->
     <div id="view-settings" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm">
-      <h2 class="text-lg font-bold mb-4" data-i18n="settingsTitle">App Settings</h2>
+      <h2 class="text-lg font-bold mb-4">App Settings</h2>
       <div class="flex items-center justify-between py-3 border-b">
-        <span class="text-sm font-medium" data-i18n="changeLanguage">Change Language:</span>
+        <span class="text-sm font-medium">Change Language:</span>
         <select id="lang-selector" onchange="changeLanguage(this.value)" class="border rounded-md px-3 py-1.5 text-sm bg-gray-50">
           <option value="en" selected>English</option>
           <option value="bn">বাংলা (Bengali)</option>
-          <option value="hi">हिन्दी (Hindi)</option>
-          <option value="or">ଓଡ଼ିଆ (Odia)</option>
-          <option value="mr">मराठी (Marathi)</option>
         </select>
       </div>
     </div>
   </div>
-
-  <!-- ================= Firebase SDK & App Logic ================= -->
-  <script type="module">
+    <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getAuth, 
-      createUserWithEmailAndPassword, 
-      signInWithEmailAndPassword, 
-      signInWithPopup, 
-      GoogleAuthProvider, 
-      sendPasswordResetEmail, 
-      onAuthStateChanged, 
-      signOut,
-      updateProfile 
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
+      signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, 
+      onAuthStateChanged, signOut, updateProfile 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      onSnapshot, 
-      query, 
-      orderBy, 
-      serverTimestamp, 
-      doc, 
-      setDoc,
-      deleteDoc,
-      updateDoc,
-      arrayUnion,
-      arrayRemove
+      getFirestore, collection, addDoc, getDocs, getDoc,
+      query, orderBy, limit, startAfter, serverTimestamp, 
+      doc, setDoc, deleteDoc, updateDoc, increment, arrayUnion
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBPZ5J4zXZ54UX22rMryU2AT5buy5oOfNo",
       authDomain: "mysocial-7a273.firebaseapp.com",
@@ -210,6 +239,20 @@
 
     let isRegisterMode = false;
     let currentUser = null;
+    let userProfile = { following: [], hiddenPosts: [], affinity: {} };
+    let lastVisibleDoc = null;
+    const PAGE_SIZE = 15;
+
+    const FEED_WEIGHTS = { FOLLOW: 40, RECENCY: 30, ENGAGEMENT: 15, AFFINITY: 15 };
+
+    // স্প্ল্যাশ স্ক্রিন রিমুভ করার টাইমআউট (অ্যানিমেশন শেষ হওয়ার পর)
+    setTimeout(() => {
+      const splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => splash.remove(), 500);
+      }
+    }, 1800);
 
     window.togglePasswordVisibility = () => {
       const pwdInput = document.getElementById('auth-password');
@@ -244,7 +287,6 @@
       const rawInput = document.getElementById('auth-email-phone').value;
       const password = document.getElementById('auth-password').value;
       const fullName = document.getElementById('auth-name').value.trim();
-
       const email = parseInputToEmail(rawInput);
 
       if (!email) return alert("Please enter a valid Email address or Mobile number.");
@@ -256,7 +298,7 @@
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
           await updateProfile(user, { displayName: fullName });
-          await setDoc(doc(db, "users", user.uid), { uid: user.uid, name: fullName, email: user.email, createdAt: serverTimestamp() });
+          await setDoc(doc(db, "users", user.uid), { uid: user.uid, name: fullName, email: user.email, following: [], hiddenPosts: [], createdAt: serverTimestamp() });
           alert("Account created successfully!");
         } else {
           await signInWithEmailAndPassword(auth, email, password);
@@ -272,7 +314,7 @@
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
         await setDoc(doc(db, "users", user.uid), {
-          uid: user.uid, name: user.displayName || "Google User", email: user.email, photoURL: user.photoURL || "", createdAt: serverTimestamp()
+          uid: user.uid, name: user.displayName || "Google User", email: user.email, photoURL: user.photoURL || "", following: [], hiddenPosts: [], createdAt: serverTimestamp()
         }, { merge: true });
       } catch (error) {
         alert("Google Login Error: " + error.message);
@@ -294,7 +336,7 @@
 
     window.handleLogout = () => signOut(auth);
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if (user) {
         document.getElementById('auth-container').classList.add('hidden');
@@ -304,7 +346,9 @@
         const showName = user.displayName || user.email.split('@')[0];
         document.getElementById('user-display-name').innerText = showName;
         document.getElementById('user-avatar').innerText = showName[0].toUpperCase();
-        loadPosts();
+
+        await loadUserProfile();
+        loadPersonalizedFeed(true);
       } else {
         document.getElementById('auth-container').classList.remove('hidden');
         document.getElementById('app-content').classList.add('hidden');
@@ -312,7 +356,182 @@
       }
     });
 
-    // =================১. পোস্ট তৈরি (Create Post) =================
+    async function loadUserProfile() {
+      if (!currentUser) return;
+      try {
+        const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          userProfile.following = data.following || [];
+          userProfile.hiddenPosts = data.hiddenPosts || [];
+        }
+      } catch (e) {
+        console.error("Error loading profile signals:", e);
+      }
+    }
+
+    function calculatePostScore(post) {
+      const isFollowing = userProfile.following.includes(post.userUid) ? 1.0 : 0.2;
+      const followScore = isFollowing * FEED_WEIGHTS.FOLLOW;
+
+      const now = Date.now();
+      const postTime = post.createdAt ? post.createdAt.toMillis() : now;
+      const ageInHours = Math.max(0, (now - postTime) / (1000 * 60 * 60));
+      const recencyScore = Math.exp(-0.03 * ageInHours) * FEED_WEIGHTS.RECENCY;
+
+      const likes = Object.keys(post.reactions || {}).length;
+      const comments = post.commentCount || 0;
+      const shares = post.shareCount || 0;
+      const rawEngagement = (likes * 1) + (comments * 2) + (shares * 3);
+      const engagementScore = Math.min(1.0, rawEngagement / 20) * FEED_WEIGHTS.ENGAGEMENT;
+
+      const affinityVal = userProfile.affinity[post.userUid] || 0;
+      const affinityScore = Math.min(1.0, affinityVal / 10) * FEED_WEIGHTS.AFFINITY;
+
+      return followScore + recencyScore + engagementScore + affinityScore;
+    }
+
+    window.loadPersonalizedFeed = async (isReset = false) => {
+      const postsContainer = document.getElementById('posts-container');
+      const loadMoreBtn = document.getElementById('load-more-btn');
+      
+      if (isReset) {
+        lastVisibleDoc = null;
+        postsContainer.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">Ranking posts for you...</p>`;
+      }
+
+      try {
+        let q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE_SIZE));
+        if (!isReset && lastVisibleDoc) {
+          q = query(collection(db, "posts"), orderBy("createdAt", "desc"), startAfter(lastVisibleDoc), limit(PAGE_SIZE));
+        }
+
+        const snapshot = await getDocs(q);
+        if (snapshot.empty && isReset) {
+          postsContainer.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No posts available right now.</p>`;
+          loadMoreBtn.classList.add('hidden');
+          return;
+        }
+
+        if (snapshot.docs.length > 0) {
+          lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
+        }
+
+        let fetchedPosts = [];
+        snapshot.forEach((docSnap) => {
+          const postId = docSnap.id;
+          const postData = docSnap.data();
+
+          if (!userProfile.hiddenPosts.includes(postId)) {
+            const score = calculatePostScore(postData);
+            fetchedPosts.push({ id: postId, ...postData, score });
+          }
+        });
+
+        fetchedPosts.sort((a, b) => b.score - a.score);
+
+        if (isReset) postsContainer.innerHTML = "";
+
+        fetchedPosts.forEach((post) => {
+          renderSinglePost(post);
+        });
+
+        loadMoreBtn.classList.toggle('hidden', snapshot.docs.length < PAGE_SIZE);
+
+      } catch (e) {
+        console.error("Feed error:", e);
+        postsContainer.innerHTML = `<p class="text-center text-xs text-red-400 py-4">Failed to load feed. Please try again.</p>`;
+      }
+    };
+
+    const reactionIcons = { like: "👍", love: "❤️", haha: "😆", wow: "😮", sad: "😢", angry: "😡" };
+
+    function renderSinglePost(post) {
+      const postsContainer = document.getElementById('posts-container');
+      const isOwner = currentUser && currentUser.uid === post.userUid;
+      const authorName = post.userName || "User";
+
+      const reactions = post.reactions || {};
+      const reactionCounts = Object.values(reactions).reduce((acc, r) => { acc[r] = (acc[r] || 0) + 1; return acc; }, {});
+      const totalReactions = Object.keys(reactions).length;
+      const myReaction = currentUser ? reactions[currentUser.uid] : null;
+
+      const postHtml = `
+        <article id="post-card-${post.id}" class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                ${authorName[0].toUpperCase()}
+              </div>
+              <div>
+                <h2 class="font-semibold text-gray-900 text-xs">${authorName}</h2>
+                <span class="text-[10px] text-gray-400">Score: ${Math.round(post.score)}</span>
+              </div>
+            </div>
+            <div class="space-x-1 text-xs text-gray-400">
+              <button onclick="hidePost('${post.id}')" title="Hide Post" class="hover:text-gray-600 p-1"><i class="fa-solid fa-eye-slash"></i></button>
+              ${isOwner ? `
+                <button onclick="editPost('${post.id}', '${post.textContent}')" class="hover:text-blue-600 p-1"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="deletePost('${post.id}')" class="hover:text-red-600 p-1"><i class="fa-solid fa-trash"></i></button>
+              ` : ''}
+            </div>
+          </div>
+
+          <p class="text-sm text-gray-800 mb-2 whitespace-pre-line">${post.textContent}</p>
+
+          ${totalReactions > 0 ? `
+            <div class="flex items-center space-x-1 text-xs text-gray-500 py-1 border-b">
+              <span>${Object.keys(reactionCounts).map(r => reactionIcons[r]).join('')}</span>
+              <span>${totalReactions}</span>
+            </div>
+          ` : ''}
+
+          <div class="flex justify-around py-1 text-xs text-gray-500 border-t mt-1">
+            <div class="relative group w-full text-center py-1">
+              <div class="reaction-box space-x-1">
+                <button onclick="reactToPost('${post.id}', 'like')" class="hover:scale-125 transition">👍</button>
+                <button onclick="reactToPost('${post.id}', 'love')" class="hover:scale-125 transition">❤️</button>
+                <button onclick="reactToPost('${post.id}', 'haha')" class="hover:scale-125 transition">😆</button>
+                <button onclick="reactToPost('${post.id}', 'wow')" class="hover:scale-125 transition">😮</button>
+                <button onclick="reactToPost('${post.id}', 'sad')" class="hover:scale-125 transition">😢</button>
+                <button onclick="reactToPost('${post.id}', 'angry')" class="hover:scale-125 transition">😡</button>
+              </div>
+              <button class="w-full font-semibold ${myReaction ? 'text-blue-600' : 'hover:text-blue-600'}">
+                ${myReaction ? reactionIcons[myReaction] + ' ' + myReaction.toUpperCase() : '<i class="fa-regular fa-thumbs-up"></i> Like'}
+              </button>
+            </div>
+
+            <button onclick="toggleCommentBox('${post.id}')" class="w-full text-center py-1 font-semibold hover:text-blue-600">
+              <i class="fa-regular fa-comment"></i> Comment
+            </button>
+            <button onclick="sharePost('${post.id}')" class="w-full text-center py-1 font-semibold hover:text-blue-600">
+              <i class="fa-solid fa-share"></i> Share
+            </button>
+          </div>
+
+          <div id="comments-${post.id}" class="hidden pt-2 border-t mt-2 space-y-2">
+            <div class="flex space-x-2">
+              <input type="text" id="comment-input-${post.id}" placeholder="Write a comment..." class="w-full bg-gray-100 rounded-full px-3 py-1 text-xs outline-none border focus:bg-white">
+              <button onclick="addComment('${post.id}')" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">Send</button>
+            </div>
+            <div id="comment-list-${post.id}" class="space-y-1.5 pt-1"></div>
+          </div>
+        </article>
+      `;
+      postsContainer.innerHTML += postHtml;
+    }
+
+    window.hidePost = async (postId) => {
+      if (!currentUser) return;
+      userProfile.hiddenPosts.push(postId);
+      document.getElementById(`post-card-${postId}`)?.remove();
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid), { hiddenPosts: arrayUnion(postId) });
+      } catch (e) {
+        console.error("Error hiding post:", e);
+      }
+    };
+
     window.createPost = async () => {
       const text = document.getElementById('post-input').value;
       if (!text.trim()) return;
@@ -322,20 +541,23 @@
           textContent: text,
           userUid: currentUser.uid,
           userName: currentUser.displayName || currentUser.email.split('@')[0],
-          reactions: {}, // { uid: "like" / "love" / "haha" etc }
+          reactions: {},
+          commentCount: 0,
+          shareCount: 0,
           createdAt: serverTimestamp()
         });
         document.getElementById('post-input').value = "";
+        loadPersonalizedFeed(true);
       } catch (error) {
         alert("Error posting: " + error.message);
       }
     };
 
-    // ================= ২. পোস্ট সম্পাদনা ও মুছা (Edit & Delete) =================
     window.deletePost = async (postId) => {
-      if (confirm("Are you sure you want to delete this post?")) {
+      if (confirm("Delete this post?")) {
         try {
           await deleteDoc(doc(db, "posts", postId));
+          document.getElementById(`post-card-${postId}`)?.remove();
         } catch (e) {
           alert("Delete failed: " + e.message);
         }
@@ -347,29 +569,24 @@
       if (newText && newText.trim() !== currentText) {
         try {
           await updateDoc(doc(db, "posts", postId), { textContent: newText });
+          loadPersonalizedFeed(true);
         } catch (e) {
           alert("Edit failed: " + e.message);
         }
       }
     };
 
-    // ================= ৩. ইমোজি প্রতিক্রিয়া (Reactions System) =================
     window.reactToPost = async (postId, reactionType) => {
       if (!currentUser) return;
-      const postRef = doc(db, "posts", postId);
       try {
-        await updateDoc(postRef, {
-          [`reactions.${currentUser.uid}`]: reactionType
-        });
+        await updateDoc(doc(db, "posts", postId), { [`reactions.${currentUser.uid}`]: reactionType });
       } catch (e) {
         console.error("Reaction error:", e);
       }
     };
 
-    // ================= ৪. কমেন্ট সিস্টেম (Comments System) =================
     window.toggleCommentBox = (postId) => {
-      const box = document.getElementById(`comments-${postId}`);
-      box.classList.toggle('hidden');
+      document.getElementById(`comments-${postId}`)?.classList.toggle('hidden');
     };
 
     window.addComment = async (postId) => {
@@ -384,158 +601,21 @@
           userName: currentUser.displayName || currentUser.email.split('@')[0],
           createdAt: serverTimestamp()
         });
+        await updateDoc(doc(db, "posts", postId), { commentCount: increment(1) });
         input.value = "";
       } catch (e) {
         alert("Comment failed: " + e.message);
       }
     };
 
-    // ================= ৫. পোস্ট শেয়ার ও লিংক কপি =================
-    window.sharePost = (postId) => {
-      const dummyUrl = window.location.href;
-      navigator.clipboard.writeText(dummyUrl);
-      alert("Post link copied to clipboard!");
-    };
-
-    // ================= ৬. রিয়েল-টাইম পোস্ট ও কমেন্ট ফিড লোড =================
-    const reactionIcons = {
-      like: "👍", love: "❤️", haha: "😆", wow: "😮", sad: "😢", angry: "😡"
-    };
-
-    function loadPosts() {
-      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-      onSnapshot(q, (snapshot) => {
-        const postsContainer = document.getElementById('posts-container');
-        postsContainer.innerHTML = "";
-
-        if (snapshot.empty) {
-          postsContainer.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No posts yet. Be the first to post!</p>`;
-          return;
-        }
-
-        snapshot.forEach((docSnap) => {
-          const postId = docSnap.id;
-          const post = docSnap.data();
-          const isOwner = currentUser && currentUser.uid === post.userUid;
-          const authorName = post.userName || "User";
-
-          // প্রতিক্রিয়ার সংখ্যা হিসাব
-          const reactions = post.reactions || {};
-          const reactionCounts = Object.values(reactions).reduce((acc, r) => {
-            acc[r] = (acc[r] || 0) + 1;
-            return acc;
-          }, {});
-          const totalReactions = Object.keys(reactions).length;
-          const myReaction = currentUser ? reactions[currentUser.uid] : null;
-
-          const postHtml = `
-            <article class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
-              <!-- পোস্টের ইউজার হেডার & অপশন -->
-              <div class="flex justify-between items-center mb-2">
-                <div class="flex items-center space-x-2">
-                  <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                    ${authorName[0].toUpperCase()}
-                  </div>
-                  <div>
-                    <h2 class="font-semibold text-gray-900 text-xs">${authorName}</h2>
-                    <span class="text-[10px] text-gray-400">Just now</span>
-                  </div>
-                </div>
-                ${isOwner ? `
-                  <div class="space-x-1 text-xs text-gray-400">
-                    <button onclick="editPost('${postId}', '${post.textContent}')" class="hover:text-blue-600 p-1"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deletePost('${postId}')" class="hover:text-red-600 p-1"><i class="fa-solid fa-trash"></i></button>
-                  </div>
-                ` : ''}
-              </div>
-
-              <!-- পোস্টের টেক্সট -->
-              <p class="text-sm text-gray-800 mb-2 whitespace-pre-line">${post.textContent}</p>
-
-               <!-- রিকশন সংখ্যা প্রদর্শন -->
-              ${totalReactions > 0 ? `
-                <div class="flex items-center space-x-1 text-xs text-gray-500 py-1 border-b">
-                  <span>${Object.keys(reactionCounts).map(r => reactionIcons[r]).join('')}</span>
-                  <span>${totalReactions}</span>
-                </div>
-              ` : ''}
-
-              <!-- বাটন বার (Like, Comment, Share) -->
-              <div class="flex justify-around py-1 text-xs text-gray-500 border-t mt-1">
-                <!-- রিকশন বাটন উইথ পপ-আপ -->
-                <div class="relative group w-full text-center py-1">
-                  <div class="reaction-box space-x-1">
-                    <button onclick="reactToPost('${postId}', 'like')" class="hover:scale-125 transition">👍</button>
-                    <button onclick="reactToPost('${postId}', 'love')" class="hover:scale-125 transition">❤️</button>
-                    <button onclick="reactToPost('${postId}', 'haha')" class="hover:scale-125 transition">😆</button>
-                    <button onclick="reactToPost('${postId}', 'wow')" class="hover:scale-125 transition">😮</button>
-                    <button onclick="reactToPost('${postId}', 'sad')" class="hover:scale-125 transition">😢</button>
-                    <button onclick="reactToPost('${postId}', 'angry')" class="hover:scale-125 transition">😡</button>
-                  </div>
-                  <button class="w-full font-semibold ${myReaction ? 'text-blue-600' : 'hover:text-blue-600'}">
-                    ${myReaction ? reactionIcons[myReaction] + ' ' + myReaction.toUpperCase() : '<i class="fa-regular fa-thumbs-up"></i> Like'}
-                  </button>
-                </div>
-
-                <button onclick="toggleCommentBox('${postId}')" class="w-full text-center py-1 font-semibold hover:text-blue-600">
-                  <i class="fa-regular fa-comment"></i> Comment
-                </button>
-                <button onclick="sharePost('${postId}')" class="w-full text-center py-1 font-semibold hover:text-blue-600">
-                  <i class="fa-solid fa-share"></i> Share
-                </button>
-              </div>
-
-              <!-- কমেন্ট সেকশন -->
-              <div id="comments-${postId}" class="hidden pt-2 border-t mt-2 space-y-2">
-                <div class="flex space-x-2">
-                  <input type="text" id="comment-input-${postId}" placeholder="Write a comment..." class="w-full bg-gray-100 rounded-full px-3 py-1 text-xs outline-none border focus:bg-white">
-                  <button onclick="addComment('${postId}')" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">Send</button>
-                </div>
-                <!-- কমেন্টের তালিকা -->
-                <div id="comment-list-${postId}" class="space-y-1.5 pt-1"></div>
-              </div>
-            </article>
-          `;
-          postsContainer.innerHTML += postHtml;
-          loadComments(postId);
-        });
-      });
-    }
-
-    // নির্দিষ্ট পোস্টের কমেন্ট লোড করার লজিক
-    function loadComments(postId) {
-      const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
-      onSnapshot(q, (snapshot) => {
-        const listDiv = document.getElementById(`comment-list-${postId}`);
-        if (!listDiv) return;
-        listDiv.innerHTML = "";
-
-        snapshot.forEach((cDoc) => {
-          const c = cDoc.data();
-          listDiv.innerHTML += `
-            <div class="bg-gray-50 p-2 rounded-lg text-xs">
-              <span class="font-bold text-gray-900">${c.userName || "User"}: </span>
-              <span class="text-gray-700">${c.text}</span>
-            </div>
-          `;
-        });
-      });
-    }
-
-    // ল্যাঙ্গুয়েজ ও ট্যাব স্ব্যাপ
-    const translations = {
-      en: { whatIsOnYourMind: "What's on your mind?", reelsComingSoon: "Reels video feed coming soon...", friendsTitle: "Friend Requests", noFriends: "No new requests found.", notifTitle: "Notifications", noNotif: "No new notifications.", settingsTitle: "App Settings", changeLanguage: "Change Language:" },
-      bn: { whatIsOnYourMind: "আপনার মনে কি আছে?", reelsComingSoon: "রিলস ভিডিও ফিড খুব শীঘ্রই আসছে...", friendsTitle: "ফ্রেন্ড রিকোয়েস্ট", noFriends: "কোনো নতুন রিকোয়েস্ট নেই।", notifTitle: "নোটিফিকেশন", noNotif: "কোনো নতুন নোটিফিকেশন নেই।", settingsTitle: "অ্যাপ সেটিংস", changeLanguage: "ভাষা পরিবর্তন করুন:" }
-    };
-
-    window.changeLanguage = (lang) => {
-      document.querySelectorAll("[data-i18n]").forEach(element => {
-        const key = element.getAttribute("data-i18n");
-        if (translations[lang] && translations[lang][key]) {
-          if (element.tagName === "INPUT") element.placeholder = translations[lang][key];
-          else element.innerText = translations[lang][key];
-        }
-      });
+    window.sharePost = async (postId) => {
+      navigator.clipboard.writeText(window.location.href);
+      try {
+        await updateDoc(doc(db, "posts", postId), { shareCount: increment(1) });
+        alert("Post link copied to clipboard!");
+      } catch (e) {
+        console.error("Share count error:", e);
+      }
     };
 
     window.switchTab = (tabName) => {
