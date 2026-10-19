@@ -34,6 +34,9 @@
       z-index: 20;
     }
     .group:hover .reaction-box { display: flex; }
+    
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 pb-12">
@@ -147,9 +150,32 @@
     </main>
 
     <!-- Reels Tab -->
-    <div id="view-reels" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-black text-center text-white flex flex-col items-center justify-center">
-      <i class="fa-solid fa-clapperboard text-5xl mb-3 text-gray-400"></i>
-      <p class="text-sm text-gray-300">Reels video feed coming soon...</p>
+    <div id="view-reels" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-black relative overflow-hidden flex flex-col">
+      <div class="absolute top-2 right-4 z-30">
+        <button onclick="openUploadModal()" class="bg-white/25 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1.5 hover:bg-white/35 transition shadow-sm">
+          <i class="fa-solid fa-plus text-[10px]"></i>
+          <span>Upload Reel</span>
+        </button>
+      </div>
+
+      <div id="reels-container" class="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-none">
+        <div class="h-full flex items-center justify-center text-gray-400 text-xs">
+          Loading reels...
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Reel Modal -->
+    <div id="reel-upload-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-2xl p-4 space-y-3 shadow-xl">
+        <h3 class="font-bold text-sm text-gray-800">Upload New Reel</h3>
+        <input type="text" id="reel-video-url" placeholder="Enter Video URL (MP4)" class="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-blue-600">
+        <input type="text" id="reel-caption" placeholder="Write a caption..." class="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-blue-600">
+        <div class="flex justify-end space-x-2 pt-2">
+          <button onclick="closeUploadModal()" class="px-3 py-1.5 text-xs text-gray-600 font-semibold">Cancel</button>
+          <button onclick="uploadReel()" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold">Post Reel</button>
+        </div>
+      </div>
     </div>
 
     <!-- Friends & Follow Tab -->
@@ -180,7 +206,7 @@
       </div>
     </div>
   </div>
-    <!-- Firebase & App Logic Engine -->
+    <!-- Firebase & App Logic Engine (Part A) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
@@ -193,6 +219,7 @@
       query, orderBy, limit, startAfter, serverTimestamp, 
       doc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyBPZ5J4zXZ54UX22rMryU2AT5buy5oOfNo",
       authDomain: "mysocial-7a273.firebaseapp.com",
@@ -359,8 +386,7 @@
         alert("Follow action failed: " + e.message);
       }
     };
-
-    async function loadSuggestedUsers() {
+        async function loadSuggestedUsers() {
       const container = document.getElementById('suggested-users-container');
       if (!container) return;
       container.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">Loading users...</p>`;
@@ -543,7 +569,8 @@
               <i class="fa-solid fa-share"></i> Share
             </button>
           </div>
-     <div id="comments-${post.id}" class="hidden pt-2 border-t mt-2 space-y-2">
+
+          <div id="comments-${post.id}" class="hidden pt-2 border-t mt-2 space-y-2">
             <div class="flex space-x-2">
               <input type="text" id="comment-input-${post.id}" placeholder="Write a comment..." class="w-full bg-gray-100 rounded-full px-3 py-1 text-xs outline-none border focus:bg-white">
               <button onclick="addComment('${post.id}')" class="bg-blue-600 text-white px-3 py-1 rounded-xs text-xs font-semibold">Send</button>
@@ -609,6 +636,7 @@
         }
       }
     };
+
     window.reactToPost = async (postId, reactionType) => {
       if (!currentUser) return;
       try {
@@ -621,10 +649,11 @@
     window.toggleCommentBox = (postId) => {
       document.getElementById(`comments-${postId}`)?.classList.toggle('hidden');
     };
+
     window.addComment = async (postId) => {
       const input = document.getElementById(`comment-input-${postId}`);
       const text = input.value.trim();
-      if (!text.trim()) return;
+      if (!text) return;
 
       try {
         await addDoc(collection(db, "posts", postId, "comments"), {
@@ -650,6 +679,121 @@
       }
     };
 
+    // Reels Logic
+    window.openUploadModal = () => {
+      document.getElementById('reel-upload-modal').classList.remove('hidden');
+    };
+    window.closeUploadModal = () => {
+      document.getElementById('reel-upload-modal').classList.add('hidden');
+    };
+
+    window.uploadReel = async () => {
+      const videoUrl = document.getElementById('reel-video-url').value.trim();
+      const caption = document.getElementById('reel-caption').value.trim();
+
+      if (!videoUrl) return alert("Please enter a valid video URL.");
+
+      try {
+        await addDoc(collection(db, "reels"), {
+          videoUrl: videoUrl,
+          caption: caption || "",
+          authorId: currentUser.uid,
+          authorName: currentUser.displayName || currentUser.email.split('@')[0],
+          likes: {},
+          createdAt: serverTimestamp()
+        });
+        document.getElementById('reel-video-url').value = "";
+        document.getElementById('reel-caption').value = "";
+        closeUploadModal();
+        loadReelsFeed();
+        alert("Reel uploaded successfully!");
+      } catch (e) {
+        alert("Upload failed: " + e.message);
+      }
+    };
+
+    window.loadReelsFeed = async () => {
+      const container = document.getElementById('reels-container');
+      if (!container) return;
+
+      try {
+        const q = query(collection(db, "reels"), orderBy("createdAt", "desc"), limit(10));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          container.innerHTML = `<div class="h-full flex items-center justify-center text-gray-400 text-xs">No reels found. Be the first to upload!</div>`;
+          return;
+        }
+
+        container.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          const reel = docSnap.data();
+          const reelId = docSnap.id;
+          const likesCount = Object.keys(reel.likes || {}).length;
+          const isLiked = currentUser && reel.likes && reel.likes[currentUser.uid];
+
+          const reelHtml = `
+            <div class="h-full w-full snap-start relative flex items-center justify-center bg-black">
+              <video src="${reel.videoUrl}" class="h-full w-full object-cover" loop autoplay muted playsinline onclick="this.paused ? this.play() : this.pause()"></video>
+
+              <div class="absolute bottom-4 left-4 right-16 text-white z-20 space-y-1">
+                <div class="flex items-center space-x-2">
+                  <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs">
+                    ${(reel.authorName || 'U')[0].toUpperCase()}
+                  </div>
+                  <span class="font-bold text-xs">${reel.authorName}</span>
+                </div>
+                <p class="text-xs text-gray-200 line-clamp-2">${reel.caption}</p>
+              </div>
+
+              <div class="absolute bottom-6 right-3 z-20 flex flex-col items-center space-y-4 text-white">
+                <button onclick="likeReel('${reelId}')" class="flex flex-col items-center space-y-1">
+                  <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center ${isLiked ? 'text-red-500' : 'text-white'}">
+                    <i class="fa-solid fa-heart text-lg"></i>
+                  </div>
+                  <span class="text-[10px] font-semibold">${likesCount}</span>
+                </button>
+                <button class="flex flex-col items-center space-y-1">
+                  <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
+                    <i class="fa-solid fa-comment text-base"></i>
+                  </div>
+                  <span class="text-[10px] font-semibold">0</span>
+                </button>
+                <button onclick="shareReel()" class="flex flex-col items-center space-y-1">
+                  <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
+                    <i class="fa-solid fa-share text-base"></i>
+                  </div>
+                  <span class="text-[10px] font-semibold">Share</span>
+                </button>
+              </div>
+            </div>
+          `;
+          container.innerHTML += reelHtml;
+        });
+      } catch (e) {
+        console.error("Error loading reels:", e);
+        container.innerHTML = `<div class="h-full flex items-center justify-center text-red-400 text-xs">Failed to load reels.</div>`;
+      }
+    };
+
+    window.likeReel = async (reelId) => {
+      if (!currentUser) return;
+      try {
+        const reelRef = doc(db, "reels", reelId);
+        await updateDoc(reelRef, {
+          [`likes.${currentUser.uid}`]: true
+        });
+        loadReelsFeed();
+      } catch (e) {
+        console.error("Like reel error:", e);
+      }
+    };
+
+    window.shareReel = () => {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Reel link copied!");
+    };
+
     window.switchTab = (tabName) => {
       ['home', 'reels', 'friends', 'notifications', 'settings'].forEach(t => {
         document.getElementById('view-' + t)?.classList.add('hidden');
@@ -657,7 +801,13 @@
       });
       document.getElementById('view-' + tabName)?.classList.remove('hidden');
       document.getElementById('nav-' + tabName)?.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+
+      if (tabName === 'reels') {
+        loadReelsFeed();
+      }
     };
   </script>
 </body>
 </html>
+
+  
