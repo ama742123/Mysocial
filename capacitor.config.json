@@ -1,0 +1,10 @@
+{
+  "appId": "com.mysocial.app",
+  "appName": "mysocial",
+  "webDir": ".",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://ama742123.github.io/mysocial",
+    "cleartext": true
+  }
+}
