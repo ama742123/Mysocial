@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mysocial - Social Media App</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 text-gray-800 pb-12">
+
+  <!-- ================= হেডার ও টপ নেভিগেশন ================= -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="px-4 py-2.5 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-600 tracking-wide">mysocial</h1>
+      <div class="flex space-x-2 items-center">
+        <span id="user-display-name" class="text-xs font-semibold text-gray-600"></span>
+        <button id="logout-btn" onclick="handleLogout()" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded-md font-semibold">Logout</button>
+      </div>
+    </div>
+
+    <!-- টপ নেভিগেশন বার -->
+    <nav class="flex justify-around border-t border-gray-100 text-gray-500 font-medium">
+      <button onclick="switchTab('home')" id="nav-home" class="w-full py-2.5 text-blue-600 border-b-2 border-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-house text-xl"></i>
+      </button>
+      <button onclick="switchTab('reels')" id="nav-reels" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-clapperboard text-xl"></i>
+      </button>
+      <button onclick="switchTab('friends')" id="nav-friends" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-user-group text-xl"></i>
+      </button>
+      <button onclick="switchTab('notifications')" id="nav-notif" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-bell text-xl"></i>
+      </button>
+      <button onclick="switchTab('settings')" id="nav-settings" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-gear text-xl"></i>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ================= অ্থেনটিকেশন সেকশন (Login / Register) ================= -->
+  <div id="auth-container" class="max-w-md mx-auto my-6 p-6 bg-white rounded-lg shadow-md">
+    <h2 class="text-xl font-bold text-center mb-4 text-blue-600" id="auth-title">Login to mysocial</h2>
+    <div class="space-y-3">
+      <input type="email" id="auth-email" placeholder="Email" class="w-full border px-3 py-2 rounded-md text-sm outline-none focus:border-blue-500">
+      <input type="password" id="auth-password" placeholder="Password" class="w-full border px-3 py-2 rounded-md text-sm outline-none focus:border-blue-500">
+      <button onclick="handleAuth()" id="auth-submit-btn" class="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-semibold hover:bg-blue-700">Login</button>
+    </div>
+    <div class="text-center mt-4">
+      <button onclick="toggleAuthMode()" id="toggle-auth-btn" class="text-xs text-blue-600 font-semibold">Don't have an account? Register</button>
+    </div>
+  </div>
+
+  <!-- ================= অ্যাপ কন্টেন্ট (Login করার পর দেখাবে) ================= -->
+  <div id="app-content" class="hidden">
+    <!-- ট্যাব ১: হোম ফিড -->
+    <main id="view-home" class="max-w-md mx-auto p-2 space-y-2">
+      <!-- পোস্ট করার বক্স -->
+      <div class="bg-white p-3 rounded-lg shadow-sm">
+        <div class="flex items-center space-x-2">
+          <input type="text" id="post-input" placeholder="What's on your mind?" data-i18n="whatIsOnYourMind" class="w-full bg-gray-100 rounded-full px-4 py-2 text-sm outline-none">
+          <button onclick="createPost()" class="bg-blue-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:bg-blue-700">Post</button>
+        </div>
+      </div>
+
+      <!-- রিয়েলটাইম পোস্ট ফিড -->
+      <div id="posts-container" class="space-y-2">
+        <p class="text-center text-xs text-gray-400 py-4">Loading posts...</p>
+      </div>
+    </main>
+
+    <!-- ট্যাব ২: রিলস -->
+    <div id="view-reels" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-black text-center text-white flex flex-col items-center justify-center">
+      <i class="fa-solid fa-clapperboard text-5xl mb-3 text-gray-400"></i>
+      <p class="text-sm text-gray-300" data-i18n="reelsComingSoon">Reels video feed coming soon...</p>
+    </div>
+
+    <!-- ট্যাব ৩: ফ্রেন্ডস -->
+    <div id="view-friends" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm text-center">
+      <h2 class="text-lg font-bold" data-i18n="friendsTitle">Friend Requests</h2>
+      <p class="text-sm text-gray-500 mt-2" data-i18n="noFriends">No new requests found.</p>
+    </div>
+
+    <!-- ট্যাব ৪: নোটিফিকেশন -->
+    <div id="view-notifications" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm text-center">
+      <h2 class="text-lg font-bold" data-i18n="notifTitle">Notifications</h2>
+      <p class="text-sm text-gray-500 mt-2" data-i18n="noNotif">No new notifications.</p>
+    </div>
+
+    <!-- ট্যাব ৫: সেটিংস -->
+    <div id="view-settings" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm">
+      <h2 class="text-lg font-bold mb-4" data-i18n="settingsTitle">App Settings</h2>
+      <div class="flex items-center justify-between py-3 border-b">
+        <span class="text-sm font-medium" data-i18n="changeLanguage">Change Language:</span>
+        <select id="lang-selector" onchange="changeLanguage(this.value)" class="border rounded-md px-3 py-1.5 text-sm bg-gray-50">
+          <option value="en" selected>English</option>
+          <option value="bn">বাংলা (Bengali)</option>
+          <option value="hi">हिन्दी (Hindi)</option>
+          <option value="or">ଓଡ଼ିଆ (Odia)</option>
+          <option value="mr">मराठी (Marathi)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Firebase SDK & App Logic ================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // আপনার Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBPZ5J4zXZ54UX22rMryU2AT5buy5oOfNo",
+      authDomain: "mysocial-7a273.firebaseapp.com",
+      databaseURL: "https://mysocial-7a273-default-rtdb.firebaseio.com",
+      projectId: "mysocial-7a273",
+      storageBucket: "mysocial-7a273.firebasestorage.app",
+      messagingSenderId: "25826997817",
+      appId: "1:25826997817:web:08b203b0489469b809bfe8"
+    };
+
+    // Firebase Init
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let isRegisterMode = false;
+    let currentUser = null;
+
+    // অ্থেনটিকেশন মোড পরিবর্তন (Login / Register)
+    window.toggleAuthMode = () => {
+      isRegisterMode = !isRegisterMode;
+      document.getElementById('auth-title').innerText = isRegisterMode ? "Register on mysocial" : "Login to mysocial";
+      document.getElementById('auth-submit-btn').innerText = isRegisterMode ? "Register" : "Login";
+      document.getElementById('toggle-auth-btn').innerText = isRegisterMode ? "Already have an account? Login" : "Don't have an account? Register";
+    };
+
+    // লগইন বা রেজিস্ট্রেশন হ্যান্ডেল করা
+    window.handleAuth = async () => {
+      const email = document.getElementById('auth-email').value;
+      const password = document.getElementById('auth-password').value;
+      if (!email || !password) return alert("Please enter email and password");
+
+      try {
+        if (isRegisterMode) {
+          await createUserWithEmailAndPassword(auth, email, password);
+          alert("Account created successfully!");
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+
+    // লগআউট
+    window.handleLogout = () => signOut(auth);
+
+    // ইউজার স্টেট চেক
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      if (user) {
+        document.getElementById('auth-container').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        document.getElementById('logout-btn').classList.remove('hidden');
+        document.getElementById('user-display-name').innerText = user.email.split('@')[0];
+        loadPosts();
+      } else {
+        document.getElementById('auth-container').classList.remove('hidden');
+        document.getElementById('app-content').classList.add('hidden');
+        document.getElementById('logout-btn').classList.add('hidden');
+        document.getElementById('user-display-name').innerText = "";
+      }
+    });
+
+    // নতুন পোস্ট সেভ করা (Firestore DB)
+    window.createPost = async () => {
+      const text = document.getElementById('post-input').value;
+      if (!text.trim()) return;
+
+      try {
+        await addDoc(collection(db, "posts"), {
+          textContent: text,
+          userEmail: currentUser.email,
+          createdAt: serverTimestamp()
+        });
+        document.getElementById('post-input').value = "";
+      } catch (error) {
+        alert("Error posting: " + error.message);
+      }
+    };
+
+    // ফায়ারবেস থেকে রিয়েল-টাইম পোস্ট লোড করা
+    function loadPosts() {
+      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+      onSnapshot(q, (snapshot) => {
+        const postsContainer = document.getElementById('posts-container');
+        postsContainer.innerHTML = "";
+
+        if (snapshot.empty) {
+          postsContainer.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No posts yet. Be the first to post!</p>`;
+          return;
+        }
+
+        snapshot.forEach((doc) => {
+          const post = doc.data();
+          const postHtml = `
+            <article class="bg-white rounded-lg shadow-sm p-3">
+              <div class="flex items-center space-x-2 mb-2">
+                <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs">
+                  ${post.userEmail ? post.userEmail[0].toUpperCase() : 'U'}
+                </div>
+                <div>
+                  <h2 class="font-semibold text-gray-900 text-xs">${post.userEmail ? post.userEmail.split('@')[0] : 'User'}</h2>
+                </div>
+              </div>
+              <p class="text-sm text-gray-800 mb-2">${post.textContent}</p>
+              <div class="flex justify-around py-1 text-xs text-gray-500 border-t pt-2">
+                <button class="hover:text-blue-600"><i class="fa-regular fa-thumbs-up"></i> Like</button>
+                <button class="hover:text-blue-600"><i class="fa-regular fa-comment"></i> Comment</button>
+                <button class="hover:text-blue-600"><i class="fa-solid fa-share"></i> Share</button>
+              </div>
+            </article>
+          `;
+          postsContainer.innerHTML += postHtml;
+        });
+      });
+    }
+
+    // মাল্টি-ল্যাঙ্গুয়েজ লজিক
+    const translations = {
+      en: { whatIsOnYourMind: "What's on your mind?", reelsComingSoon: "Reels video feed coming soon...", friendsTitle: "Friend Requests", noFriends: "No new requests found.", notifTitle: "Notifications", noNotif: "No new notifications.", settingsTitle: "App Settings", changeLanguage: "Change Language:" },
+      bn: { whatIsOnYourMind: "আপনার মনে কি আছে?", reelsComingSoon: "রিলস ভিডিও ফিড খুব শীঘ্রই আসছে...", friendsTitle: "ফ্রেন্ড রিকোয়েস্ট", noFriends: "কোনো নতুন রিকোয়েস্ট নেই।", notifTitle: "নোটিফিকেশন", noNotif: "কোনো নতুন নোটিফিকেশন নেই।", settingsTitle: "অ্যাপ সেটিংস", changeLanguage: "ভাষা পরিবর্তন করুন:" },
+      hi: { whatIsOnYourMind: "आपके मन में क्या है?", reelsComingSoon: "रील्स वीडियो फ़ीड जल्द ही आ रहा है...", friendsTitle: "फ्रेंड रिक्वेस्ट्स", noFriends: "कोई नई रिक्वेस्ट नहीं है।", notifTitle: "नोटिफिकेशंस", noNotif: "कोई नया नोटिफिकेशन नहीं है।", settingsTitle: "ऐप सेटिंग्स", changeLanguage: "भाषा बदलें:" },
+      or: { whatIsOnYourMind: "ଆପଣଙ୍କ ମନରେ କ’ଣ ଅଛି?", reelsComingSoon: "ରିଲ୍ସ ଭିଡିଓ ଫିଡ୍ ଶୀଘ୍ର ଆସୁଛି...", friendsTitle: "ଫ୍ରେଣ୍ଡ୍ ରିକ୍ୱେଷ୍ଟ୍", noFriends: "କୌଣସି ନୂତନ ରିକ୍ୱେଷ୍ଟ୍ ନାହିଁ।", notifTitle: "ନୋଟିଫିକେସନ୍", noNotif: "କୌଣସି ନୂତନ ନୋଟିଫିକେସନ୍ ନାହିଁ।", settingsTitle: "ଆପ୍ ସେଟିଂସ୍", changeLanguage: "ଭାଷା ପରିବର୍ତ୍ତନ କରନ୍ତୁ:" },
+      mr: { whatIsOnYourMind: "तुमच्या मनात काय आहे?", reelsComingSoon: "रील्स व्हिडिओ फीड लवकरच येत आहे...", friendsTitle: "मित्र विनंत्या", noFriends: "कोणतीही नवीन विनंती नाही.", notifTitle: "सूचना", noNotif: "कोणतीही नवीन सूचना नाही.", settingsTitle: "अॅप सेटिंग्ज", changeLanguage: "भाषा बदला:" }
+    };
+
+    window.changeLanguage = (lang) => {
+      document.querySelectorAll("[data-i18n]").forEach(element => {
+        const key = element.getAttribute("data-i18n");
+        if (translations[lang] && translations[lang][key]) {
+          if (element.tagName === "INPUT") element.placeholder = translations[lang][key];
+          else element.innerText = translations[lang][key];
+        }
+      });
+    };
+
+    window.switchTab = (tabName) => {
+      ['home', 'reels', 'friends', 'notifications', 'settings'].forEach(t => {
+        document.getElementById('view-' + t)?.classList.add('hidden');
+        document.getElementById('nav-' + t)?.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+      });
+      document.getElementById('view-' + tabName)?.classList.remove('hidden');
+      document.getElementById('nav-' + tabName)?.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+    };
+  </script>
+</body>
+  </html>
+  
