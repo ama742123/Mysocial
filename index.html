@@ -2,55 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>mysocial - Social Media App</title>
   
-  <!-- Web App Manifest Link -->
   <link rel="manifest" href="manifest.json">
-
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* ফেসবুক স্টাইল স্প্ল্যাশ স্ক্রিন ও লোগো অ্যানিমেশন */
     @keyframes logoPop {
-      0% {
-        transform: scale(0.6);
-        opacity: 0;
-      }
-      50% {
-        transform: scale(1.05);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
+      0% { transform: scale(0.6); opacity: 0; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
     }
-
     @keyframes textFadeUp {
-      0% {
-        opacity: 0;
-        transform: translateY(15px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      0% { opacity: 0; transform: translateY(15px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
+    .animate-logo { animation: logoPop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .animate-text { animation: textFadeUp 1s ease-out 0.4s forwards; opacity: 0; }
 
-    .animate-logo {
-      animation: logoPop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .animate-text {
-      animation: textFadeUp 1s ease-out 0.4s forwards;
-      opacity: 0;
-    }
-
-    /* রিকশন বক্স স্টাইল */
     .reaction-box {
       display: none;
       position: absolute;
@@ -62,18 +33,15 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.15);
       z-index: 20;
     }
-    .group:hover .reaction-box {
-      display: flex;
-    }
+    .group:hover .reaction-box { display: flex; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 pb-12">
 
-  <!-- ================= ফেসবুক-স্টাইল ইউনিক স্প্ল্যাশ স্ক্রিন ================= -->
+  <!-- Splash Screen -->
   <div id="splash-screen" class="fixed inset-0 bg-white z-[100] flex flex-col justify-between items-center py-12 transition-opacity duration-500">
     <div></div>
     <div class="flex flex-col items-center animate-logo">
-      <!-- শুধুমাত্র পরিচ্ছন্ন ও বোল্ড M লোগো -->
       <div class="w-20 h-20 rounded-2xl shadow-md border border-gray-100 flex items-center justify-center bg-blue-600">
         <span class="text-white font-black text-4xl tracking-tight">M</span>
       </div>
@@ -84,7 +52,7 @@
     </div>
   </div>
 
-  <!-- ================= হেডার ও টপ নেভিগেশন ================= -->
+  <!-- Header & Navigation -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
     <div class="px-4 py-2.5 flex justify-between items-center">
       <h1 class="text-2xl font-bold text-blue-600 tracking-wide">mysocial</h1>
@@ -124,26 +92,21 @@
       <div id="name-field" class="hidden">
         <input type="text" id="auth-name" placeholder="Full Name" class="w-full border border-gray-300 px-3.5 py-2 rounded-lg text-sm outline-none focus:border-blue-600">
       </div>
-
       <div>
         <input type="text" id="auth-email-phone" placeholder="Email address or Mobile number" class="w-full border border-gray-300 px-3.5 py-2 rounded-lg text-sm outline-none focus:border-blue-600">
       </div>
-
       <div class="relative">
         <input type="password" id="auth-password" placeholder="Password" class="w-full border border-gray-300 px-3.5 py-2 rounded-lg text-sm outline-none focus:border-blue-600 pr-10">
         <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-sm">
           <i id="password-toggle-icon" class="fa-solid fa-eye"></i>
         </button>
       </div>
-      
       <button onclick="handleAuth()" id="auth-submit-btn" class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition">Log In</button>
-      
       <div class="flex items-center my-3">
         <div class="flex-grow border-t border-gray-200"></div>
         <span class="px-2 text-xs text-gray-400 font-medium">OR</span>
         <div class="flex-grow border-t border-gray-200"></div>
       </div>
-
       <button onclick="handleGoogleLogin()" class="w-full border border-gray-300 bg-white text-gray-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 flex items-center justify-center space-x-2 transition">
         <i class="fa-brands fa-google text-red-500 text-base"></i>
         <span>Continue with Google</span>
@@ -155,9 +118,9 @@
       <button onclick="showForgotPassword()" id="forgot-password-btn" class="text-gray-500 hover:text-blue-600 hover:underline">Forgot password?</button>
     </div>
   </div>
-
-  <!-- App Content -->
+    <!-- App Content -->
   <div id="app-content" class="hidden">
+    <!-- Home Tab -->
     <main id="view-home" class="max-w-md mx-auto p-2 space-y-3">
       <div class="bg-white p-3 rounded-lg shadow-sm space-y-2 border border-gray-200">
         <div class="flex items-center space-x-2">
@@ -175,7 +138,7 @@
       </div>
 
       <div id="posts-container" class="space-y-3">
-        <p class="text-center text-xs text-gray-400 py-4">Loading your personalized feed...</p>
+        <p class="text-center text-xs text-gray-400 py-4">Ranking posts for you...</p>
       </div>
 
       <div class="text-center pt-2">
@@ -183,21 +146,29 @@
       </div>
     </main>
 
+    <!-- Reels Tab -->
     <div id="view-reels" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-black text-center text-white flex flex-col items-center justify-center">
       <i class="fa-solid fa-clapperboard text-5xl mb-3 text-gray-400"></i>
       <p class="text-sm text-gray-300">Reels video feed coming soon...</p>
     </div>
 
-    <div id="view-friends" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm text-center">
-      <h2 class="text-lg font-bold">Friend Requests</h2>
-      <p class="text-sm text-gray-500 mt-2">No new requests found.</p>
+    <!-- Friends & Follow Tab -->
+    <div id="view-friends" class="hidden max-w-md mx-auto p-4 space-y-3">
+      <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+        <h2 class="text-sm font-bold text-gray-800 mb-2"><i class="fa-solid fa-user-plus text-blue-600 mr-1"></i> Discover People & Friends</h2>
+        <div id="suggested-users-container" class="space-y-2 pt-1">
+          <p class="text-xs text-gray-400 text-center py-2">Loading users...</p>
+        </div>
+      </div>
     </div>
 
+    <!-- Notifications Tab -->
     <div id="view-notifications" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm text-center">
       <h2 class="text-lg font-bold">Notifications</h2>
       <p class="text-sm text-gray-500 mt-2">No new notifications.</p>
     </div>
 
+    <!-- Settings Tab -->
     <div id="view-settings" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm">
       <h2 class="text-lg font-bold mb-4">App Settings</h2>
       <div class="flex items-center justify-between py-3 border-b">
@@ -220,9 +191,8 @@
     import { 
       getFirestore, collection, addDoc, getDocs, getDoc,
       query, orderBy, limit, startAfter, serverTimestamp, 
-      doc, setDoc, deleteDoc, updateDoc, increment, arrayUnion
+      doc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyBPZ5J4zXZ54UX22rMryU2AT5buy5oOfNo",
       authDomain: "mysocial-7a273.firebaseapp.com",
@@ -245,7 +215,6 @@
 
     const FEED_WEIGHTS = { FOLLOW: 40, RECENCY: 30, ENGAGEMENT: 15, AFFINITY: 15 };
 
-    // স্প্ল্যাশ স্ক্রিন রিমুভ করার টাইমআউট (অ্যানিমেশন শেষ হওয়ার পর)
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       if (splash) {
@@ -349,6 +318,7 @@
 
         await loadUserProfile();
         loadPersonalizedFeed(true);
+        loadSuggestedUsers();
       } else {
         document.getElementById('auth-container').classList.remove('hidden');
         document.getElementById('app-content').classList.add('hidden');
@@ -370,8 +340,72 @@
       }
     }
 
+    window.toggleFollowUser = async (targetUid) => {
+      if (!currentUser) return;
+      const isFollowing = userProfile.following.includes(targetUid);
+      
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        if (isFollowing) {
+          userProfile.following = userProfile.following.filter(id => id !== targetUid);
+          await updateDoc(userRef, { following: arrayRemove(targetUid) });
+        } else {
+          userProfile.following.push(targetUid);
+          await updateDoc(userRef, { following: arrayUnion(targetUid) });
+        }
+        loadSuggestedUsers();
+        loadPersonalizedFeed(true);
+      } catch (e) {
+        alert("Follow action failed: " + e.message);
+      }
+    };
+
+    async function loadSuggestedUsers() {
+      const container = document.getElementById('suggested-users-container');
+      if (!container) return;
+      container.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">Loading users...</p>`;
+
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        container.innerHTML = "";
+        let count = 0;
+
+        snapshot.forEach((docSnap) => {
+          const userData = docSnap.data();
+          if (userData.uid && userData.uid !== currentUser.uid) {
+            count++;
+            const isFollowing = userProfile.following.includes(userData.uid);
+            const name = userData.name || "User";
+
+            const userHtml = `
+              <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100 text-xs">
+                <div class="flex items-center space-x-2">
+                  <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                    ${name[0].toUpperCase()}
+                  </div>
+                  <span class="font-semibold text-gray-800">${name}</span>
+                </div>
+                <button onclick="toggleFollowUser('${userData.uid}')" class="px-3 py-1 rounded-md font-bold transition ${isFollowing ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-blue-600 text-white hover:bg-blue-700'}">
+                  ${isFollowing ? 'Following' : 'Follow'}
+                </button>
+              </div>
+            `;
+            container.innerHTML += userHtml;
+          }
+        });
+
+        if (count === 0) {
+          container.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">No other users found.</p>`;
+        }
+      } catch (e) {
+        console.error("Error loading users:", e);
+        container.innerHTML = `<p class="text-xs text-red-400 text-center py-2">Failed to load users.</p>`;
+      }
+    }
+
     function calculatePostScore(post) {
-      const isFollowing = userProfile.following.includes(post.userUid) ? 1.0 : 0.2;
+      const authorId = post.authorId || post.userUid;
+      const isFollowing = userProfile.following.includes(authorId) ? 1.0 : 0.2;
       const followScore = isFollowing * FEED_WEIGHTS.FOLLOW;
 
       const now = Date.now();
@@ -385,7 +419,7 @@
       const rawEngagement = (likes * 1) + (comments * 2) + (shares * 3);
       const engagementScore = Math.min(1.0, rawEngagement / 20) * FEED_WEIGHTS.ENGAGEMENT;
 
-      const affinityVal = userProfile.affinity[post.userUid] || 0;
+      const affinityVal = userProfile.affinity[authorId] || 0;
       const affinityScore = Math.min(1.0, affinityVal / 10) * FEED_WEIGHTS.AFFINITY;
 
       return followScore + recencyScore + engagementScore + affinityScore;
@@ -448,7 +482,8 @@
 
     function renderSinglePost(post) {
       const postsContainer = document.getElementById('posts-container');
-      const isOwner = currentUser && currentUser.uid === post.userUid;
+      const authorId = post.authorId || post.userUid;
+      const isOwner = currentUser && currentUser.uid === authorId;
       const authorName = post.userName || "User";
 
       const reactions = post.reactions || {};
@@ -508,11 +543,10 @@
               <i class="fa-solid fa-share"></i> Share
             </button>
           </div>
-
-          <div id="comments-${post.id}" class="hidden pt-2 border-t mt-2 space-y-2">
+     <div id="comments-${post.id}" class="hidden pt-2 border-t mt-2 space-y-2">
             <div class="flex space-x-2">
               <input type="text" id="comment-input-${post.id}" placeholder="Write a comment..." class="w-full bg-gray-100 rounded-full px-3 py-1 text-xs outline-none border focus:bg-white">
-              <button onclick="addComment('${post.id}')" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">Send</button>
+              <button onclick="addComment('${post.id}')" class="bg-blue-600 text-white px-3 py-1 rounded-xs text-xs font-semibold">Send</button>
             </div>
             <div id="comment-list-${post.id}" class="space-y-1.5 pt-1"></div>
           </div>
@@ -539,7 +573,7 @@
       try {
         await addDoc(collection(db, "posts"), {
           textContent: text,
-          userUid: currentUser.uid,
+          authorId: currentUser.uid,
           userName: currentUser.displayName || currentUser.email.split('@')[0],
           reactions: {},
           commentCount: 0,
@@ -575,7 +609,6 @@
         }
       }
     };
-
     window.reactToPost = async (postId, reactionType) => {
       if (!currentUser) return;
       try {
@@ -588,16 +621,15 @@
     window.toggleCommentBox = (postId) => {
       document.getElementById(`comments-${postId}`)?.classList.toggle('hidden');
     };
-
     window.addComment = async (postId) => {
       const input = document.getElementById(`comment-input-${postId}`);
       const text = input.value.trim();
-      if (!text) return;
+      if (!text.trim()) return;
 
       try {
         await addDoc(collection(db, "posts", postId, "comments"), {
           text: text,
-          userUid: currentUser.uid,
+          authorId: currentUser.uid,
           userName: currentUser.displayName || currentUser.email.split('@')[0],
           createdAt: serverTimestamp()
         });
