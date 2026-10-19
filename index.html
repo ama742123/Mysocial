@@ -73,10 +73,9 @@
   <div id="splash-screen" class="fixed inset-0 bg-white z-[100] flex flex-col justify-between items-center py-12 transition-opacity duration-500">
     <div></div>
     <div class="flex flex-col items-center animate-logo">
-      <div class="w-20 h-20 rounded-2xl overflow-hidden shadow-md border border-gray-100 flex items-center justify-center bg-blue-600">
-        <div class="text-white font-extrabold text-4xl tracking-tighter flex items-center justify-center">
-          M<span class="text-2xl font-light">i</span>
-        </div>
+      <!-- শুধুমাত্র পরিচ্ছন্ন ও বোল্ড M লোগো -->
+      <div class="w-20 h-20 rounded-2xl shadow-md border border-gray-100 flex items-center justify-center bg-blue-600">
+        <span class="text-white font-black text-4xl tracking-tight">M</span>
       </div>
     </div>
     <div class="flex flex-col items-center animate-text space-y-1">
@@ -210,7 +209,8 @@
       </div>
     </div>
   </div>
-    <script type="module">
+    <!-- Firebase & App Logic Engine -->
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
       getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
