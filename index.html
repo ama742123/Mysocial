@@ -39,7 +39,7 @@
     .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-800 pb-12">
+<body class="bg-gray-100 text-gray-800 pb-16 transition-colors duration-300">
 
   <!-- Splash Screen -->
   <div id="splash-screen" class="fixed inset-0 bg-white z-[100] flex flex-col justify-between items-center py-12 transition-opacity duration-500">
@@ -56,7 +56,7 @@
   </div>
 
   <!-- Header & Navigation -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50 transition-colors duration-300">
     <div class="px-4 py-2.5 flex justify-between items-center">
       <h1 class="text-2xl font-bold text-blue-600 tracking-wide">mysocial</h1>
       <div class="flex space-x-2 items-center">
@@ -65,21 +65,27 @@
       </div>
     </div>
 
-    <nav class="flex justify-around border-t border-gray-100 text-gray-500 font-medium">
+    <nav class="flex justify-around border-t border-gray-100 text-gray-500 font-medium text-sm">
       <button onclick="switchTab('home')" id="nav-home" class="w-full py-2.5 text-blue-600 border-b-2 border-blue-600 flex justify-center items-center">
-        <i class="fa-solid fa-house text-xl"></i>
+        <i class="fa-solid fa-house text-lg"></i>
       </button>
       <button onclick="switchTab('reels')" id="nav-reels" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
-        <i class="fa-solid fa-clapperboard text-xl"></i>
+        <i class="fa-solid fa-clapperboard text-lg"></i>
       </button>
       <button onclick="switchTab('friends')" id="nav-friends" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
-        <i class="fa-solid fa-user-group text-xl"></i>
+        <i class="fa-solid fa-user-group text-lg"></i>
+      </button>
+      <button onclick="switchTab('chat')" id="nav-chat" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-comments text-lg"></i>
       </button>
       <button onclick="switchTab('notifications')" id="nav-notif" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
-        <i class="fa-solid fa-bell text-xl"></i>
+        <i class="fa-solid fa-bell text-lg"></i>
+      </button>
+      <button onclick="switchTab('profile')" id="nav-profile" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-user text-lg"></i>
       </button>
       <button onclick="switchTab('settings')" id="nav-settings" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
-        <i class="fa-solid fa-gear text-xl"></i>
+        <i class="fa-solid fa-gear text-lg"></i>
       </button>
     </nav>
   </header>
@@ -130,25 +136,22 @@
           <div id="user-avatar" class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">U</div>
           <input type="text" id="post-input" placeholder="What's on your mind?" class="w-full bg-gray-100 rounded-full px-4 py-2 text-sm outline-none border hover:bg-gray-200 focus:bg-white focus:border-blue-500 transition">
         </div>
-        <div class="flex justify-end pt-1">
+
+        <div id="image-preview-container" class="hidden relative mt-2">
+          <img id="image-preview" class="max-h-40 rounded-lg object-cover mx-auto" />
+          <button onclick="removeImagePreview()" class="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center">&times;</button>
+        </div>
+
+        <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+          <label class="cursor-pointer text-gray-500 hover:text-blue-600 text-sm px-2 flex items-center space-x-1">
+            <i class="fa-solid fa-image text-lg"></i>
+            <span class="text-xs font-semibold">Photo</span>
+            <input type="file" id="post-image-input" accept="image/*" class="hidden" onchange="previewImage(this)">
+          </label>
           <button onclick="createPost()" class="bg-blue-600 text-white px-5 py-1.5 rounded-full text-xs font-bold hover:bg-blue-700 transition">Post</button>
         </div>
       </div>
-
-      <div class="flex justify-between items-center px-1 text-xs text-gray-500">
-        <span class="font-semibold"><i class="fa-solid fa-sliders text-blue-600 mr-1"></i> Personalized Feed</span>
-        <button onclick="loadPersonalizedFeed(true)" class="hover:text-blue-600"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
-      </div>
-
-      <div id="posts-container" class="space-y-3">
-        <p class="text-center text-xs text-gray-400 py-4">Ranking posts for you...</p>
-      </div>
-
-      <div class="text-center pt-2">
-        <button id="load-more-btn" onclick="loadPersonalizedFeed(false)" class="hidden bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-full font-semibold hover:bg-gray-300">Load More Posts</button>
-      </div>
-    </main>
-        <!-- Reels Tab -->
+          <!-- Reels Tab -->
     <div id="view-reels" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-black relative overflow-hidden flex flex-col">
       <div class="absolute top-2 right-4 z-30">
         <button onclick="openUploadModal()" class="bg-white/25 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1.5 hover:bg-white/35 transition shadow-sm">
@@ -179,10 +182,54 @@
 
     <!-- Friends & Follow Tab -->
     <div id="view-friends" class="hidden max-w-md mx-auto p-4 space-y-3">
-      <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-        <h2 class="text-sm font-bold text-gray-800 mb-2"><i class="fa-solid fa-user-plus text-blue-600 mr-1"></i> Discover People & Friends</h2>
-        <div id="suggested-users-container" class="space-y-2 pt-1">
-          <p class="text-xs text-gray-400 text-center py-2">Loading users...</p>
+      <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 space-y-3">
+        <div class="flex border-b border-gray-100 pb-2 text-xs font-semibold">
+          <button onclick="switchFriendsSubTab('discover')" id="subtab-discover" class="flex-1 text-blue-600 border-b-2 border-blue-600 pb-1 transition">Discover People</button>
+          <button onclick="switchFriendsSubTab('following')" id="subtab-following" class="flex-1 text-gray-500 pb-1 transition">Following List</button>
+        </div>
+
+        <div id="friends-section-discover" class="space-y-2">
+          <div id="suggested-users-container" class="space-y-2 pt-1">
+            <p class="text-xs text-gray-400 text-center py-2">Loading users...</p>
+          </div>
+        </div>
+
+        <div id="friends-section-following" class="hidden space-y-2">
+          <div id="following-users-container" class="space-y-2 pt-1">
+            <p class="text-xs text-gray-400 text-center py-2">Loading following list...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+        <!-- Chat Tab -->
+    <div id="view-chat" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-white flex flex-col border-x border-gray-200">
+      <div id="chat-list-view" class="h-full flex flex-col">
+        <div class="p-3 border-b border-gray-200 font-bold text-sm text-gray-800">
+          <i class="fa-solid fa-comments text-blue-600 mr-1"></i> Messages
+        </div>
+        <div id="conversations-container" class="flex-1 overflow-y-auto divide-y divide-gray-100">
+          <p class="text-center text-xs text-gray-400 py-6">Loading conversations...</p>
+        </div>
+      </div>
+
+      <div id="chat-room-view" class="hidden h-full flex flex-col">
+        <div class="p-3 border-b border-gray-200 flex items-center space-x-3 bg-gray-50">
+          <button onclick="closeChatRoom()" class="text-gray-600 hover:text-blue-600 text-sm">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs" id="active-chat-avatar">U</div>
+          <h3 class="font-bold text-sm text-gray-800" id="active-chat-name">Chat Name</h3>
+        </div>
+
+        <div id="chat-messages-container" class="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50/50">
+          <p class="text-center text-xs text-gray-400 py-4">Loading messages...</p>
+        </div>
+
+        <div class="p-2.5 border-t border-gray-200 bg-white flex items-center space-x-2">
+          <input type="text" id="chat-message-input" placeholder="Type a message..." class="w-full bg-gray-100 rounded-full px-4 py-2 text-xs outline-none border focus:bg-white focus:border-blue-500 transition">
+          <button onclick="sendChatMessage()" class="bg-blue-600 text-white rounded-full w-9 h-9 flex items-center justify-center text-xs hover:bg-blue-700 transition flex-shrink-0">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -198,32 +245,144 @@
         <p class="text-center text-xs text-gray-400 py-4">Loading notifications...</p>
       </div>
     </div>
+        <!-- Profile Tab -->
+    <div id="view-profile" class="hidden max-w-md mx-auto p-4 space-y-3">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-center space-y-3">
+        <div class="w-20 h-20 rounded-full bg-blue-600 text-white mx-auto flex items-center justify-center font-bold text-2xl shadow-md" id="profile-avatar">
+          U
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-gray-800" id="profile-name">User Name</h2>
+          <p class="text-xs text-gray-400" id="profile-email">email@example.com</p>
+        </div>
+        <div class="flex justify-center space-x-6 py-2 border-t border-b border-gray-100 text-xs">
+          <div>
+            <span class="font-bold text-gray-800 block" id="profile-posts-count">0</span>
+            <span class="text-gray-400">Posts</span>
+          </div>
+          <div>
+            <span class="font-bold text-gray-800 block" id="profile-following-count">0</span>
+            <span class="text-gray-400">Following</span>
+          </div>
+        </div>
+        <button onclick="openEditProfileModal()" class="w-full bg-gray-100 text-gray-700 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
+          Edit Profile
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">My Posts</h3>
+        <div id="profile-posts-container" class="space-y-3">
+          <p class="text-center text-xs text-gray-400 py-4">Loading your posts...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-2xl p-4 space-y-3 shadow-xl">
+        <h3 class="font-bold text-sm text-gray-800">Edit Profile</h3>
+        <input type="text" id="edit-profile-name" placeholder="Full Name" class="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-blue-600">
+        <div class="flex justify-end space-x-2 pt-2">
+          <button onclick="closeEditProfileModal()" class="px-3 py-1.5 text-xs text-gray-600 font-semibold">Cancel</button>
+          <button onclick="updateProfileDetails()" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold">Save Changes</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Settings Tab -->
-    <div id="view-settings" class="hidden max-w-md mx-auto p-4 bg-white mt-4 rounded-lg shadow-sm">
-      <h2 class="text-lg font-bold mb-4">App Settings</h2>
-      <div class="flex items-center justify-between py-3 border-b">
-        <span class="text-sm font-medium">Change Language:</span>
-        <select id="lang-selector" onchange="changeLanguage(this.value)" class="border rounded-md px-3 py-1.5 text-sm bg-gray-50">
-          <option value="en" selected>English</option>
-          <option value="bn">বাংলা (Bengali)</option>
-        </select>
+    <div id="view-settings" class="hidden max-w-md mx-auto p-3 space-y-3 min-h-[calc(100vh-110px)] pb-10">
+      <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+        <h2 class="text-sm font-bold text-gray-800"><i class="fa-solid fa-gear text-blue-600 mr-1"></i> Settings & Privacy</h2>
+      </div>
+
+      <!-- Account Settings -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden text-xs">
+        <div class="p-3 bg-gray-50 font-bold text-gray-700 border-b">Account Settings</div>
+        <div class="divide-y divide-gray-100">
+          <div onclick="openEditProfileModal()" class="p-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
+            <span class="font-medium text-gray-800"><i class="fa-solid fa-user-pen mr-2 text-blue-600"></i> Edit Profile & Name</span>
+            <i class="fa-solid fa-chevron-right text-gray-400 text-[10px]"></i>
+          </div>
+          <div onclick="promptChangePassword()" class="p-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
+            <span class="font-medium text-gray-800"><i class="fa-solid fa-key mr-2 text-blue-600"></i> Change Password</span>
+            <i class="fa-solid fa-chevron-right text-gray-400 text-[10px]"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appearance & Language -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden text-xs">
+        <div class="p-3 bg-gray-50 font-bold text-gray-700 border-b">Preferences</div>
+        <div class="p-3 flex justify-between items-center border-b border-gray-100">
+          <span class="font-medium text-gray-800"><i class="fa-solid fa-language mr-2 text-blue-600"></i> App Language / ভাষা</span>
+          <select id="lang-selector" onchange="changeAppLanguage(this.value)" class="border rounded px-2 py-1 bg-gray-50 outline-none font-semibold">
+            <option value="en">English</option>
+            <option value="bn">বাংলা</option>
+          </select>
+        </div>
+        <div class="p-3 flex justify-between items-center">
+          <span class="font-medium text-gray-800"><i class="fa-solid fa-moon mr-2 text-blue-600"></i> Dark Mode (Theme)</span>
+          <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode(this.checked)" class="w-4 h-4 accent-blue-600">
+        </div>
+      </div>
+
+      <!-- Privacy & Notifications -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden text-xs">
+        <div class="p-3 bg-gray-50 font-bold text-gray-700 border-b">Privacy & Notifications</div>
+        <div class="p-3 flex justify-between items-center border-b border-gray-100">
+          <span class="font-medium text-gray-800">Private Account Mode</span>
+          <input type="checkbox" id="setting-private" onchange="saveUserSetting('isPrivate', this.checked)" class="w-4 h-4 accent-blue-600">
+        </div>
+        <div class="p-3 flex justify-between items-center border-b border-gray-100">
+          <span class="font-medium text-gray-800">Push Notifications</span>
+          <input type="checkbox" id="setting-notif" onchange="saveUserSetting('pushNotif', this.checked)" checked class="w-4 h-4 accent-blue-600">
+        </div>
+        <div class="p-3 flex justify-between items-center">
+          <span class="font-medium text-gray-800">Autoplay Reels Videos</span>
+          <input type="checkbox" id="setting-autoplay" onchange="saveUserSetting('autoplayReels', this.checked)" checked class="w-4 h-4 accent-blue-600">
+        </div>
+      </div>
+
+      <!-- Support & Legal -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden text-xs">
+        <div class="p-3 bg-gray-50 font-bold text-gray-700 border-b">Support & About</div>
+        <div class="divide-y divide-gray-100">
+          <div onclick="alert('mysocial v1.0.0 - Built with Firebase & Tailwind CSS')" class="p-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
+            <span class="font-medium text-gray-800"><i class="fa-solid fa-circle-info mr-2 text-blue-600"></i> App Version</span>
+            <span class="text-gray-400">v1.0.0</span>
+          </div>
+          <div onclick="alert('For support, contact admin@mysocial.app')" class="p-3 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
+            <span class="font-medium text-gray-800"><i class="fa-solid fa-headset mr-2 text-blue-600"></i> Help & Support</span>
+            <i class="fa-solid fa-chevron-right text-gray-400 text-[10px]"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="bg-white rounded-lg shadow-sm border border-red-200 overflow-hidden text-xs p-3 space-y-2">
+        <div class="font-bold text-red-600">Danger Zone</div>
+        <button onclick="handleAccountDeletion()" class="w-full bg-red-50 text-red-600 border border-red-200 py-2 rounded-md font-bold hover:bg-red-100 transition">
+          Delete Account Permanently
+        </button>
       </div>
     </div>
   </div>
-    <!-- Firebase & App Logic Engine (Part 4.1) -->
+    <!-- Firebase & App Logic Engine -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
       getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
       signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, 
-      onAuthStateChanged, signOut, updateProfile 
+      onAuthStateChanged, signOut, updateProfile,
+      EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { 
       getFirestore, collection, addDoc, getDocs, getDoc,
       query, orderBy, limit, startAfter, serverTimestamp, 
-      doc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove 
+      doc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove, onSnapshot 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBPZ5J4zXZ54UX22rMryU2AT5buy5oOfNo",
@@ -238,14 +397,18 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     let isRegisterMode = false;
     let currentUser = null;
     let userProfile = { following: [], hiddenPosts: [], affinity: {} };
     let lastVisibleDoc = null;
     const PAGE_SIZE = 15;
-
     const FEED_WEIGHTS = { FOLLOW: 40, RECENCY: 30, ENGAGEMENT: 15, AFFINITY: 15 };
+
+    let selectedImageFile = null;
+    let activeChatUser = null;
+    let unsubscribeMessages = null;
 
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
@@ -371,8 +534,7 @@
         console.error("Error loading profile signals:", e);
       }
     }
-
-    window.toggleFollowUser = async (targetUid) => {
+        window.toggleFollowUser = async (targetUid) => {
       if (!currentUser) return;
       const isFollowing = userProfile.following.includes(targetUid);
       
@@ -387,6 +549,7 @@
           sendNotification(targetUid, `${currentUser.displayName || 'Someone'} started following you.`, 'follow');
         }
         loadSuggestedUsers();
+        loadFollowingUsers();
         loadPersonalizedFeed(true);
       } catch (e) {
         alert("Follow action failed: " + e.message);
@@ -436,6 +599,75 @@
       }
     }
 
+    window.switchFriendsSubTab = (subTab) => {
+      const discoverSec = document.getElementById('friends-section-discover');
+      const followingSec = document.getElementById('friends-section-following');
+      const discoverBtn = document.getElementById('subtab-discover');
+      const followingBtn = document.getElementById('subtab-following');
+
+      if (subTab === 'discover') {
+        discoverSec.classList.remove('hidden');
+        followingSec.classList.add('hidden');
+        discoverBtn.className = "flex-1 text-blue-600 border-b-2 border-blue-600 pb-1 transition";
+        followingBtn.className = "flex-1 text-gray-500 pb-1 transition";
+        loadSuggestedUsers();
+      } else {
+        discoverSec.classList.add('hidden');
+        followingSec.classList.remove('hidden');
+        followingBtn.className = "flex-1 text-blue-600 border-b-2 border-blue-600 pb-1 transition";
+        discoverBtn.className = "flex-1 text-gray-500 pb-1 transition";
+        loadFollowingUsers();
+      }
+    };
+
+    window.loadFollowingUsers = async () => {
+      const container = document.getElementById('following-users-container');
+      if (!container || !currentUser) return;
+
+      if (!userProfile.following || userProfile.following.length === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">You are not following anyone yet.</p>`;
+        return;
+      }
+
+      container.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">Loading following list...</p>`;
+
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        container.innerHTML = "";
+        let count = 0;
+
+        snapshot.forEach((docSnap) => {
+          const userData = docSnap.data();
+          if (userData.uid && userProfile.following.includes(userData.uid)) {
+            count++;
+            const name = userData.name || "User";
+
+            const userHtml = `
+              <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100 text-xs">
+                <div class="flex items-center space-x-2">
+                  <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                    ${name[0].toUpperCase()}
+                  </div>
+                  <span class="font-semibold text-gray-800">${name}</span>
+                </div>
+                <button onclick="toggleFollowUser('${userData.uid}')" class="px-3 py-1 rounded-md font-bold transition bg-gray-200 text-gray-700 hover:bg-gray-300">
+                  Unfollow
+                </button>
+              </div>
+            `;
+            container.innerHTML += userHtml;
+          }
+        });
+
+        if (count === 0) {
+          container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">You are not following anyone yet.</p>`;
+        }
+      } catch (e) {
+        console.error("Error loading following users:", e);
+        container.innerHTML = `<p class="text-xs text-red-400 text-center py-2">Failed to load following list.</p>`;
+      }
+    };
+
     function calculatePostScore(post) {
       const authorId = post.authorId || post.userUid;
       const isFollowing = userProfile.following.includes(authorId) ? 1.0 : 0.2;
@@ -457,251 +689,13 @@
 
       return followScore + recencyScore + engagementScore + affinityScore;
     }
-        window.loadPersonalizedFeed = async (isReset = false) => {
-      const postsContainer = document.getElementById('posts-container');
-      const loadMoreBtn = document.getElementById('load-more-btn');
-      
-      if (isReset) {
-        lastVisibleDoc = null;
-        postsContainer.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">Ranking posts for you...</p>`;
-      }
-
-      try {
-        let q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE_SIZE));
-        if (!isReset && lastVisibleDoc) {
-          q = query(collection(db, "posts"), orderBy("createdAt", "desc"), startAfter(lastVisibleDoc), limit(PAGE_SIZE));
-        }
-
-        const snapshot = await getDocs(q);
-        if (snapshot.empty && isReset) {
-          postsContainer.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No posts available right now.</p>`;
-          loadMoreBtn.classList.add('hidden');
-          return;
-        }
-
-        if (snapshot.docs.length > 0) {
-          lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
-        }
-
-        let fetchedPosts = [];
-        snapshot.forEach((docSnap) => {
-          const postId = docSnap.id;
-          const postData = docSnap.data();
-
-          if (!userProfile.hiddenPosts.includes(postId)) {
-            const score = calculatePostScore(postData);
-            fetchedPosts.push({ id: postId, ...postData, score });
-          }
-        });
-
-        fetchedPosts.sort((a, b) => b.score - a.score);
-
-        if (isReset) postsContainer.innerHTML = "";
-
-        fetchedPosts.forEach((post) => {
-          renderSinglePost(post);
-        });
-
-        loadMoreBtn.classList.toggle('hidden', snapshot.docs.length < PAGE_SIZE);
-
-      } catch (e) {
-        console.error("Feed error:", e);
-        postsContainer.innerHTML = `<p class="text-center text-xs text-red-400 py-4">Failed to load feed. Please try again.</p>`;
-      }
-    };
-
-    const reactionIcons = { like: "👍", love: "❤️", haha: "😆", wow: "😮", sad: "😢", angry: "😡" };
-
-    function renderSinglePost(post) {
-      const postsContainer = document.getElementById('posts-container');
-      const authorId = post.authorId || post.userUid;
-      const isOwner = currentUser && currentUser.uid === authorId;
-      const authorName = post.userName || "User";
-
-      const reactions = post.reactions || {};
-      const reactionCounts = Object.values(reactions).reduce((acc, r) => { acc[r] = (acc[r] || 0) + 1; return acc; }, {});
-      const totalReactions = Object.keys(reactions).length;
-      const myReaction = currentUser ? reactions[currentUser.uid] : null;
-
-      const postHtml = `
-        <article id="post-card-${post.id}" class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
-          <div class="flex justify-between items-center mb-2">
-            <div class="flex items-center space-x-2">
-              <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                ${authorName[0].toUpperCase()}
-              </div>
-              <div>
-                <h2 class="font-semibold text-gray-900 text-xs">${authorName}</h2>
-                <span class="text-[10px] text-gray-400">Score: ${Math.round(post.score)}</span>
-              </div>
-            </div>
-            <div class="space-x-1 text-xs text-gray-400">
-              <button onclick="hidePost('${post.id}')" title="Hide Post" class="hover:text-gray-600 p-1"><i class="fa-solid fa-eye-slash"></i></button>
-              ${isOwner ? `
-                <button onclick="editPost('${post.id}', '${post.textContent}')" class="hover:text-blue-600 p-1"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deletePost('${post.id}')" class="hover:text-red-600 p-1"><i class="fa-solid fa-trash"></i></button>
-              ` : ''}
-            </div>
-          </div>
-
-          <p class="text-sm text-gray-800 mb-2 whitespace-pre-line">${post.textContent}</p>
-
-          ${totalReactions > 0 ? `
-            <div class="flex items-center space-x-1 text-xs text-gray-500 py-1 border-b">
-              <span>${Object.keys(reactionCounts).map(r => reactionIcons[r]).join('')}</span>
-              <span>${totalReactions}</span>
-            </div>
-          ` : ''}
-
-          <div class="flex justify-around py-1 text-xs text-gray-500 border-t mt-1">
-            <div class="relative group w-full text-center py-1">
-              <div class="reaction-box space-x-1">
-                <button onclick="reactToPost('${post.id}', '${authorId}', 'like')" class="hover:scale-125 transition">👍</button>
-                <button onclick="reactToPost('${post.id}', '${authorId}', 'love')" class="hover:scale-125 transition">❤️</button>
-                <button onclick="reactToPost('${post.id}', '${authorId}', 'haha')" class="hover:scale-125 transition">😆</button>
-                <button onclick="reactToPost('${post.id}', '${authorId}', 'wow')" class="hover:scale-125 transition">😮</button>
-                <button onclick="reactToPost('${post.id}', '${authorId}', 'sad')" class="hover:scale-125 transition">😢</button>
-                <button onclick="reactToPost('${post.id}', '${authorId}', 'angry')" class="hover:scale-125 transition">😡</button>
-              </div>
-              <button class="w-full font-semibold ${myReaction ? 'text-blue-600' : 'hover:text-blue-600'}">
-                ${myReaction ? reactionIcons[myReaction] + ' ' + myReaction.toUpperCase() : '<i class="fa-regular fa-thumbs-up"></i> Like'}
-              </button>
-            </div>
-
-            <button onclick="toggleCommentBox('${post.id}')" class="w-full text-center py-1 font-semibold hover:text-blue-600">
-              <i class="fa-regular fa-comment"></i> Comment
-            </button>
-            <button onclick="sharePost('${post.id}')" class="w-full text-center py-1 font-semibold hover:text-blue-600">
-              <i class="fa-solid fa-share"></i> Share
-            </button>
-          </div>
-
-          <div id="comments-${post.id}" class="hidden pt-2 border-t mt-2 space-y-2">
-            <div class="flex space-x-2">
-              <input type="text" id="comment-input-${post.id}" placeholder="Write a comment..." class="w-full bg-gray-100 rounded-full px-3 py-1 text-xs outline-none border focus:bg-white">
-              <button onclick="addComment('${post.id}', '${authorId}')" class="bg-blue-600 text-white px-3 py-1 rounded-xs text-xs font-semibold">Send</button>
-            </div>
-            <div id="comment-list-${post.id}" class="space-y-1.5 pt-1"></div>
-          </div>
-        </article>
-      `;
-      postsContainer.innerHTML += postHtml;
-    }
-
-    window.hidePost = async (postId) => {
-      if (!currentUser) return;
-      userProfile.hiddenPosts.push(postId);
-      document.getElementById(`post-card-${postId}`)?.remove();
-      try {
-        await updateDoc(doc(db, "users", currentUser.uid), { hiddenPosts: arrayUnion(postId) });
-      } catch (e) {
-        console.error("Error hiding post:", e);
-      }
-    };
-
-    window.createPost = async () => {
-      const text = document.getElementById('post-input').value;
-      if (!text.trim()) return;
-
-      try {
-        await addDoc(collection(db, "posts"), {
-          textContent: text,
-          authorId: currentUser.uid,
-          userName: currentUser.displayName || currentUser.email.split('@')[0],
-          reactions: {},
-          commentCount: 0,
-          shareCount: 0,
-          createdAt: serverTimestamp()
-        });
-        document.getElementById('post-input').value = "";
-        loadPersonalizedFeed(true);
-      } catch (error) {
-        alert("Error posting: " + error.message);
-      }
-    };
-
-    window.deletePost = async (postId) => {
-      if (confirm("Delete this post?")) {
-        try {
-          await deleteDoc(doc(db, "posts", postId));
-          document.getElementById(`post-card-${postId}`)?.remove();
-        } catch (e) {
-          alert("Delete failed: " + e.message);
-        }
-      }
-    };
-
-    window.editPost = async (postId, currentText) => {
-      const newText = prompt("Edit your post:", currentText);
-      if (newText && newText.trim() !== currentText) {
-        try {
-          await updateDoc(doc(db, "posts", postId), { textContent: newText });
-          loadPersonalizedFeed(true);
-        } catch (e) {
-          alert("Edit failed: " + e.message);
-        }
-      }
-    };
-
-    window.reactToPost = async (postId, authorId, reactionType) => {
-      if (!currentUser) return;
-      try {
-        await updateDoc(doc(db, "posts", postId), { [`reactions.${currentUser.uid}`]: reactionType });
-        if (authorId !== currentUser.uid) {
-          sendNotification(authorId, `${currentUser.displayName || 'Someone'} reacted to your post.`, 'like');
-        }
-      } catch (e) {
-        console.error("Reaction error:", e);
-      }
-    };
-
-    window.toggleCommentBox = (postId) => {
-      document.getElementById(`comments-${postId}`)?.classList.toggle('hidden');
-    };
-
-    window.addComment = async (postId, authorId) => {
-      const input = document.getElementById(`comment-input-${postId}`);
-      const text = input.value.trim();
-      if (!text) return;
-
-      try {
-        await addDoc(collection(db, "posts", postId, "comments"), {
-          text: text,
-          authorId: currentUser.uid,
-          userName: currentUser.displayName || currentUser.email.split('@')[0],
-          createdAt: serverTimestamp()
-        });
-        await updateDoc(doc(db, "posts", postId), { commentCount: increment(1) });
-        input.value = "";
-        if (authorId !== currentUser.uid) {
-          sendNotification(authorId, `${currentUser.displayName || 'Someone'} commented on your post.`, 'comment');
-        }
-      } catch (e) {
-        alert("Comment failed: " + e.message);
-      }
-    };
-
-    window.sharePost = async (postId) => {
-      navigator.clipboard.writeText(window.location.href);
-      try {
-        await updateDoc(doc(db, "posts", postId), { shareCount: increment(1) });
-        alert("Post link copied to clipboard!");
-      } catch (e) {
-        console.error("Share count error:", e);
-      }
-    };
         // Reels Logic
-    window.openUploadModal = () => {
-      document.getElementById('reel-upload-modal').classList.remove('hidden');
-    };
-    window.closeUploadModal = () => {
-      document.getElementById('reel-upload-modal').classList.add('hidden');
-    };
+    window.openUploadModal = () => document.getElementById('reel-upload-modal').classList.remove('hidden');
+    window.closeUploadModal = () => document.getElementById('reel-upload-modal').classList.add('hidden');
 
     window.uploadReel = async () => {
       const videoUrl = document.getElementById('reel-video-url').value.trim();
       const caption = document.getElementById('reel-caption').value.trim();
-
       if (!videoUrl) return alert("Please enter a valid video URL.");
 
       try {
@@ -717,7 +711,6 @@
         document.getElementById('reel-caption').value = "";
         closeUploadModal();
         loadReelsFeed();
-        alert("Reel uploaded successfully!");
       } catch (e) {
         alert("Upload failed: " + e.message);
       }
@@ -732,7 +725,7 @@
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
-          container.innerHTML = `<div class="h-full flex items-center justify-center text-gray-400 text-xs">No reels found. Be the first to upload!</div>`;
+          container.innerHTML = `<div class="h-full flex items-center justify-center text-gray-400 text-xs">No reels found.</div>`;
           return;
         }
 
@@ -746,35 +739,19 @@
           const reelHtml = `
             <div class="h-full w-full snap-start relative flex items-center justify-center bg-black">
               <video src="${reel.videoUrl}" class="h-full w-full object-cover" loop autoplay muted playsinline onclick="this.paused ? this.play() : this.pause()"></video>
-
               <div class="absolute bottom-4 left-4 right-16 text-white z-20 space-y-1">
                 <div class="flex items-center space-x-2">
-                  <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs">
-                    ${(reel.authorName || 'U')[0].toUpperCase()}
-                  </div>
+                  <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs">${(reel.authorName || 'U')[0].toUpperCase()}</div>
                   <span class="font-bold text-xs">${reel.authorName}</span>
                 </div>
                 <p class="text-xs text-gray-200 line-clamp-2">${reel.caption}</p>
               </div>
-
               <div class="absolute bottom-6 right-3 z-20 flex flex-col items-center space-y-4 text-white">
                 <button onclick="likeReel('${reelId}')" class="flex flex-col items-center space-y-1">
                   <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center ${isLiked ? 'text-red-500' : 'text-white'}">
                     <i class="fa-solid fa-heart text-lg"></i>
                   </div>
                   <span class="text-[10px] font-semibold">${likesCount}</span>
-                </button>
-                <button class="flex flex-col items-center space-y-1">
-                  <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
-                    <i class="fa-solid fa-comment text-base"></i>
-                  </div>
-                  <span class="text-[10px] font-semibold">0</span>
-                </button>
-                <button onclick="shareReel()" class="flex flex-col items-center space-y-1">
-                  <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
-                    <i class="fa-solid fa-share text-base"></i>
-                  </div>
-                  <span class="text-[10px] font-semibold">Share</span>
                 </button>
               </div>
             </div>
@@ -783,43 +760,127 @@
         });
       } catch (e) {
         console.error("Error loading reels:", e);
-        container.innerHTML = `<div class="h-full flex items-center justify-center text-red-400 text-xs">Failed to load reels.</div>`;
       }
     };
 
     window.likeReel = async (reelId) => {
       if (!currentUser) return;
       try {
-        const reelRef = doc(db, "reels", reelId);
-        await updateDoc(reelRef, {
-          [`likes.${currentUser.uid}`]: true
-        });
+        await updateDoc(doc(db, "reels", reelId), { [`likes.${currentUser.uid}`]: true });
         loadReelsFeed();
       } catch (e) {
         console.error("Like reel error:", e);
       }
     };
 
-    window.shareReel = () => {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Reel link copied!");
+    // Chat Logic
+    window.loadConversationsList = async () => {
+      const container = document.getElementById('conversations-container');
+      if (!container || !currentUser) return;
+      container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">Loading users...</p>`;
+
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        container.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          const userData = docSnap.data();
+          if (userData.uid && userData.uid !== currentUser.uid) {
+            const name = userData.name || "User";
+            container.innerHTML += `
+              <div onclick="openChatRoom('${userData.uid}', '${name}')" class="flex items-center space-x-3 p-3 hover:bg-gray-50 cursor-pointer transition">
+                <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">${name[0].toUpperCase()}</div>
+                <div>
+                  <h4 class="font-semibold text-xs text-gray-800">${name}</h4>
+                  <p class="text-[11px] text-gray-400">Click to start messaging</p>
+                </div>
+              </div>
+            `;
+          }
+        });
+      } catch (e) {
+        console.error("Error loading conversations:", e);
+      }
     };
 
-    // Notifications Logic
+    window.openChatRoom = (targetUid, targetName) => {
+      activeChatUser = { uid: targetUid, name: targetName };
+      document.getElementById('chat-list-view').classList.add('hidden');
+      document.getElementById('chat-room-view').classList.remove('hidden');
+      document.getElementById('active-chat-name').innerText = targetName;
+      document.getElementById('active-chat-avatar').innerText = targetName[0].toUpperCase();
+      loadRealtimeMessages();
+    };
+
+    window.closeChatRoom = () => {
+      if (unsubscribeMessages) unsubscribeMessages();
+      activeChatUser = null;
+      document.getElementById('chat-room-view').classList.add('hidden');
+      document.getElementById('chat-list-view').classList.remove('hidden');
+      loadConversationsList();
+    };
+
+    function getChatRoomId(uid1, uid2) {
+      return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+    }
+
+    window.loadRealtimeMessages = () => {
+      const container = document.getElementById('chat-messages-container');
+      if (!container || !currentUser || !activeChatUser) return;
+
+      const roomId = getChatRoomId(currentUser.uid, activeChatUser.uid);
+      const q = query(collection(db, "chats", roomId, "messages"), orderBy("createdAt", "asc"));
+
+      if (unsubscribeMessages) unsubscribeMessages();
+
+      unsubscribeMessages = onSnapshot(q, (snapshot) => {
+        container.innerHTML = "";
+        if (snapshot.empty) {
+          container.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No messages yet.</p>`;
+          return;
+        }
+        snapshot.forEach((docSnap) => {
+          const msg = docSnap.data();
+          const isMe = msg.senderId === currentUser.uid;
+          container.innerHTML += `
+            <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+              <div class="max-w-[75%] px-3 py-2 rounded-2xl text-xs ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'}">
+                <p>${msg.text}</p>
+              </div>
+            </div>
+          `;
+        });
+        container.scrollTop = container.scrollHeight;
+      });
+    };
+
+    window.sendChatMessage = async () => {
+      const input = document.getElementById('chat-message-input');
+      const text = input.value.trim();
+      if (!text || !currentUser || !activeChatUser) return;
+
+      const roomId = getChatRoomId(currentUser.uid, activeChatUser.uid);
+      input.value = "";
+      try {
+        await addDoc(collection(db, "chats", roomId, "messages"), {
+          text: text,
+          senderId: currentUser.uid,
+          createdAt: serverTimestamp()
+        });
+      } catch (e) {
+        console.error("Error sending message:", e);
+      }
+    };
+        // Notifications Logic
     window.loadNotifications = async () => {
       const container = document.getElementById('notifications-container');
       if (!container || !currentUser) return;
 
       try {
-        const q = query(
-          collection(db, "users", currentUser.uid, "notifications"), 
-          orderBy("createdAt", "desc"), 
-          limit(20)
-        );
+        const q = query(collection(db, "users", currentUser.uid, "notifications"), orderBy("createdAt", "desc"), limit(20));
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
-          container.innerHTML = `<div class="bg-white p-6 rounded-lg text-center text-xs text-gray-400 shadow-sm border border-gray-200">No new notifications.</div>`;
+          container.innerHTML = `<div class="bg-white p-6 rounded-lg text-center text-xs text-gray-400 border border-gray-200">No new notifications.</div>`;
           return;
         }
 
@@ -829,16 +890,11 @@
           const notifId = docSnap.id;
           const isUnread = !notif.read;
 
-          let icon = "fa-bell text-blue-600";
-          if (notif.type === 'like') icon = "fa-heart text-red-500";
-          if (notif.type === 'comment') icon = "fa-comment text-green-500";
-          if (notif.type === 'follow') icon = "fa-user-plus text-purple-500";
-
-          const notifHtml = `
+          container.innerHTML += `
             <div onclick="markNotificationRead('${notifId}')" class="flex items-center justify-between p-3 bg-white rounded-lg border ${isUnread ? 'border-blue-300 bg-blue-50/30' : 'border-gray-200'} shadow-sm text-xs cursor-pointer transition">
               <div class="flex items-center space-x-3">
                 <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                  <i class="fa-solid ${icon}"></i>
+                  <i class="fa-solid fa-bell text-blue-600"></i>
                 </div>
                 <div>
                   <p class="text-gray-800 font-medium">${notif.message}</p>
@@ -848,70 +904,371 @@
               ${isUnread ? '<span class="w-2 h-2 rounded-full bg-blue-600"></span>' : ''}
             </div>
           `;
-          container.innerHTML += notifHtml;
         });
       } catch (e) {
         console.error("Error loading notifications:", e);
-        container.innerHTML = `<div class="bg-white p-4 rounded-lg text-center text-xs text-red-400">Failed to load notifications.</div>`;
       }
     };
 
     window.markNotificationRead = async (notifId) => {
       if (!currentUser) return;
-      try {
-        await updateDoc(doc(db, "users", currentUser.uid, "notifications", notifId), {
-          read: true
-        });
-        loadNotifications();
-      } catch (e) {
-        console.error("Error updating notification:", e);
-      }
+      await updateDoc(doc(db, "users", currentUser.uid, "notifications", notifId), { read: true });
+      loadNotifications();
     };
 
     window.markAllNotificationsRead = async () => {
       if (!currentUser) return;
-      try {
-        const snapshot = await getDocs(collection(db, "users", currentUser.uid, "notifications"));
-        snapshot.forEach(async (docSnap) => {
-          await updateDoc(doc(db, "users", currentUser.uid, "notifications", docSnap.id), {
-            read: true
-          });
-        });
-        loadNotifications();
-      } catch (e) {
-        console.error("Error marking all read:", e);
-      }
+      const snapshot = await getDocs(collection(db, "users", currentUser.uid, "notifications"));
+      snapshot.forEach(async (docSnap) => {
+        await updateDoc(doc(db, "users", currentUser.uid, "notifications", docSnap.id), { read: true });
+      });
+      loadNotifications();
     };
 
     async function sendNotification(targetUserId, message, type) {
       if (!currentUser || targetUserId === currentUser.uid) return;
+      await addDoc(collection(db, "users", targetUserId, "notifications"), {
+        message: message, type: type, read: false, createdAt: serverTimestamp()
+      });
+    }
+
+    // Profile Page Logic
+    window.loadProfilePage = async () => {
+      if (!currentUser) return;
+      const displayName = currentUser.displayName || currentUser.email.split('@')[0];
+      document.getElementById('profile-name').innerText = displayName;
+      document.getElementById('profile-email').innerText = currentUser.email.endsWith('@mysocial.phone') ? 'Phone User' : currentUser.email;
+      document.getElementById('profile-avatar').innerText = displayName[0].toUpperCase();
+      document.getElementById('profile-following-count').innerText = userProfile.following.length;
+
+      const container = document.getElementById('profile-posts-container');
+      const snapshot = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
+      container.innerHTML = "";
+      let myPostsCount = 0;
+
+      snapshot.forEach((docSnap) => {
+        const post = docSnap.data();
+        if ((post.authorId || post.userUid) === currentUser.uid) {
+          myPostsCount++;
+          container.innerHTML += `
+            <div class="bg-white p-3 rounded-lg border border-gray-200 text-xs space-y-1">
+              <p class="text-gray-800">${post.textContent}</p>
+              <span class="text-[10px] text-gray-400">Likes: ${Object.keys(post.reactions || {}).length}</span>
+            </div>
+          `;
+        }
+      });
+      document.getElementById('profile-posts-count').innerText = myPostsCount;
+      if (myPostsCount === 0) {
+        container.innerHTML = `<div class="bg-white p-6 rounded-lg text-center text-xs text-gray-400 border border-gray-200">You haven't posted anything yet.</div>`;
+      }
+    };
+
+    window.openEditProfileModal = () => {
+      document.getElementById('edit-profile-name').value = currentUser.displayName || "";
+      document.getElementById('edit-profile-modal').classList.remove('hidden');
+    };
+    window.closeEditProfileModal = () => document.getElementById('edit-profile-modal').classList.add('hidden');
+
+    window.updateProfileDetails = async () => {
+      const newName = document.getElementById('edit-profile-name').value.trim();
+      if (!newName) return alert("Please enter a valid name.");
       try {
-        await addDoc(collection(db, "users", targetUserId, "notifications"), {
-          message: message,
-          type: type,
-          read: false,
-          createdAt: serverTimestamp()
-        });
+        await updateProfile(currentUser, { displayName: newName });
+        await setDoc(doc(db, "users", currentUser.uid), { name: newName }, { merge: true });
+        document.getElementById('user-display-name').innerText = newName;
+        closeEditProfileModal();
+        loadProfilePage();
       } catch (e) {
-        console.error("Error sending notification:", e);
+        alert("Update failed: " + e.message);
+      }
+    };
+
+    // Settings Logic
+    async function loadUserSettings() {
+      if (!currentUser) return;
+      try {
+        const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          const settings = data.settings || {};
+          
+          document.getElementById('setting-private').checked = !!settings.isPrivate;
+          document.getElementById('setting-notif').checked = settings.pushNotif !== false;
+          document.getElementById('setting-autoplay').checked = settings.autoplayReels !== false;
+          
+          if (settings.language) {
+            document.getElementById('lang-selector').value = settings.language;
+          }
+          if (settings.darkMode) {
+            document.getElementById('dark-mode-toggle').checked = true;
+            toggleDarkMode(true);
+          }
+        }
+      } catch (e) {
+        console.error("Error loading settings:", e);
       }
     }
 
-    // Tab Switcher
-    window.switchTab = (tabName) => {
-      ['home', 'reels', 'friends', 'notifications', 'settings'].forEach(t => {
-        document.getElementById('view-' + t)?.classList.add('hidden');
-        document.getElementById('nav-' + t)?.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
-      });
-      document.getElementById('view-' + tabName)?.classList.remove('hidden');
-      document.getElementById('nav-' + tabName)?.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
-
-      if (tabName === 'reels') {
-        loadReelsFeed();
-      } else if (tabName === 'notifications') {
-        loadNotifications();
+    window.saveUserSetting = async (key, value) => {
+      if (!currentUser) return;
+      try {
+        await setDoc(doc(db, "users", currentUser.uid), {
+          settings: { [key]: value }
+        }, { merge: true });
+      } catch (e) {
+        console.error("Failed to save setting:", e);
       }
     };
+
+    window.changeAppLanguage = async (lang) => {
+      await saveUserSetting('language', lang);
+      alert(lang === 'bn' ? "ভাষা বাংলায় পরিবর্তিত হয়েছে।" : "Language changed to English.");
+    };
+
+    window.toggleDarkMode = (isDark) => {
+      if (isDark) {
+        document.body.classList.add('bg-gray-900', 'text-white');
+        document.body.classList.remove('bg-gray-100', 'text-gray-800');
+      } else {
+        document.body.classList.remove('bg-gray-900', 'text-white');
+        document.body.classList.add('bg-gray-100', 'text-gray-800');
+      }
+      saveUserSetting('darkMode', isDark);
+    };
+
+    window.promptChangePassword = async () => {
+      const currentPwd = prompt("Enter your current password:");
+      if (!currentPwd) return;
+      const newPwd = prompt("Enter your new password (at least 6 characters):");
+      if (!newPwd || newPwd.length < 6) return alert("Password must be at least 6 characters.");
+
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, currentPwd);
+        await reauthenticateWithCredential(currentUser, credential);
+        await updatePassword(currentUser, newPwd);
+        alert("Password updated successfully!");
+      } catch (e) {
+        alert("Password update failed: " + e.message);
+      }
+    };
+
+    window.handleAccountDeletion = async () => {
+      const confirmText = prompt("Type 'DELETE' to permanently delete your account and all associated data:");
+      if (confirmText !== "DELETE") return;
+
+      const password = prompt("Please enter your password to confirm identity:");
+      if (!password) return;
+
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, password);
+        await reauthenticateWithCredential(currentUser, credential);
+        
+        await deleteDoc(doc(db, "users", currentUser.uid));
+        await deleteUser(currentUser);
+        alert("Account deleted successfully.");
+      } catch (e) {
+        alert("Deletion failed: " + e.message);
+      }
+    };
+        // Feed & Post Creation Logic
+    window.openPostModal = () => document.getElementById('create-post-modal').classList.remove('hidden');
+    window.closePostModal = () => {
+      document.getElementById('create-post-modal').classList.add('hidden');
+      document.getElementById('post-text-input').value = "";
+      document.getElementById('image-upload-input').value = "";
+      selectedImageFile = null;
+      document.getElementById('image-preview-container').classList.add('hidden');
+    };
+
+    window.handleImageSelect = (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      selectedImageFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('image-preview').src = e.target.result;
+        document.getElementById('image-preview-container').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.removeSelectedImage = () => {
+      selectedImageFile = null;
+      document.getElementById('image-upload-input').value = "";
+      document.getElementById('image-preview-container').classList.add('hidden');
+    };
+
+    window.createPost = async () => {
+      const text = document.getElementById('post-text-input').value.trim();
+      if (!text && !selectedImageFile) return alert("Please write something or select an image.");
+
+      try {
+        let imageUrl = "";
+        if (selectedImageFile) {
+          const storageRef = ref(storage, `posts/${currentUser.uid}_${Date.now()}_${selectedImageFile.name}`);
+          const snapshot = await uploadBytes(storageRef, selectedImageFile);
+          imageUrl = await getDownloadURL(snapshot.ref);
+        }
+
+        await addDoc(collection(db, "posts"), {
+          textContent: text,
+          imageUrl: imageUrl,
+          authorId: currentUser.uid,
+          authorName: currentUser.displayName || currentUser.email.split('@')[0],
+          reactions: {},
+          commentCount: 0,
+          shareCount: 0,
+          createdAt: serverTimestamp()
+        });
+
+        closePostModal();
+        loadPersonalizedFeed(true);
+      } catch (e) {
+        alert("Failed to create post: " + e.message);
+      }
+    };
+
+    window.loadPersonalizedFeed = async (reset = false) => {
+      const container = document.getElementById('feed-container');
+      if (!container) return;
+
+      if (reset) {
+        container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">Loading personalized feed...</p>`;
+        lastVisibleDoc = null;
+      }
+
+      try {
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE_SIZE));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty && reset) {
+          container.innerHTML = `<div class="bg-white p-6 rounded-lg text-center text-xs text-gray-400 border border-gray-200">No posts available. Follow users or create a post!</div>`;
+          return;
+        }
+
+        let posts = [];
+        snapshot.forEach((docSnap) => {
+          const post = docSnap.data();
+          const authorId = post.authorId || post.userUid;
+          if (!userProfile.hiddenPosts.includes(docSnap.id)) {
+            posts.push({ id: docSnap.id, ...post, score: calculatePostScore(post) });
+          }
+        });
+
+        posts.sort((a, b) => b.score - a.score);
+
+        if (reset) container.innerHTML = "";
+
+        posts.forEach((post) => {
+          const postId = post.id;
+          const authorName = post.authorName || "User";
+          const likesCount = Object.keys(post.reactions || {}).length;
+          const isLiked = currentUser && post.reactions && post.reactions[currentUser.uid];
+
+          const postHtml = `
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 text-xs overflow-hidden space-y-2 p-3">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">${authorName[0].toUpperCase()}</div>
+                  <div>
+                    <h4 class="font-bold text-gray-800">${authorName}</h4>
+                    <span class="text-[10px] text-gray-400">Personalized Feed</span>
+                  </div>
+                </div>
+                <button onclick="hidePost('${postId}')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+
+              ${post.textContent ? `<p class="text-gray-700 leading-relaxed">${post.textContent}</p>` : ''}
+              ${post.imageUrl ? `<img src="${post.imageUrl}" class="w-full h-auto rounded-lg max-h-80 object-cover" />` : ''}
+
+              <div class="flex justify-between items-center pt-2 border-t border-gray-100 text-gray-500 font-semibold">
+                <button onclick="toggleLikePost('${postId}')" class="flex items-center space-x-1 ${isLiked ? 'text-blue-600' : 'hover:text-blue-600'} transition">
+                  <i class="fa-solid fa-thumbs-up"></i>
+                  <span>Like (${likesCount})</span>
+                </button>
+                <button onclick="sharePost('${postId}')" class="hover:text-blue-600 transition">
+                  <i class="fa-solid fa-share"></i> Share
+                </button>
+              </div>
+            </div>
+          `;
+          container.innerHTML += postHtml;
+        });
+      } catch (e) {
+        console.error("Error loading feed:", e);
+        container.innerHTML = `<p class="text-center text-xs text-red-400 py-6">Failed to load feed.</p>`;
+      }
+    };
+
+    window.toggleLikePost = async (postId) => {
+      if (!currentUser) return;
+      try {
+        const postRef = doc(db, "posts", postId);
+        const postSnap = await getDoc(postRef);
+        if (postSnap.exists()) {
+          const postData = postSnap.data();
+          const reactions = postData.reactions || {};
+          if (reactions[currentUser.uid]) {
+            delete reactions[currentUser.uid];
+          } else {
+            reactions[currentUser.uid] = true;
+            sendNotification(postData.authorId || postData.userUid, `${currentUser.displayName || 'Someone'} liked your post.`, 'like');
+          }
+          await updateDoc(postRef, { reactions: reactions });
+          loadPersonalizedFeed(false);
+        }
+      } catch (e) {
+        console.error("Error toggling like:", e);
+      }
+    };
+
+    window.hidePost = async (postId) => {
+      if (!currentUser) return;
+      userProfile.hiddenPosts.push(postId);
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid), { hiddenPosts: arrayUnion(postId) });
+        loadPersonalizedFeed(false);
+      } catch (e) {
+        console.error("Error hiding post:", e);
+      }
+    };
+
+    window.sharePost = async (postId) => {
+      try {
+        await updateDoc(doc(db, "posts", postId), { shareCount: increment(1) });
+        alert("Post link copied to clipboard!");
+      } catch (e) {
+        console.error("Error sharing post:", e);
+      }
+    };
+
+    // Tab Switcher
+    window.switchTab = (tabName) => {
+      const tabs = ['home', 'friends', 'reels', 'chat', 'notifications', 'profile', 'settings'];
+      tabs.forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`nav-${t}`);
+        if (view) view.classList.add('hidden');
+        if (btn) btn.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+      });
+
+      const activeView = document.getElementById(`view-${tabName}`);
+      const activeBtn = document.getElementById(`nav-${tabName}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) activeBtn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+
+      if (tabName === 'home') loadPersonalizedFeed(false);
+      if (tabName === 'friends') loadSuggestedUsers();
+      if (tabName === 'reels') loadReelsFeed();
+      if (tabName === 'chat') loadConversationsList();
+      if (tabName === 'notifications') loadNotifications();
+      if (tabName === 'profile') loadProfilePage();
+      if (tabName === 'settings') loadUserSettings();
+    };
+
+    // Initial default tab state
+    switchTab('home');
   </script>
 </body>
 </html>
