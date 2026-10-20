@@ -129,8 +129,8 @@
       <button onclick="handleGoogleLogin()" class="w-full border border-gray-300 bg-white text-gray-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 flex items-center justify-center space-x-2 transition">
         <i class="fa-brands fa-google text-red-500 text-base"></i>
         <span>Continue with Google</span>
-  </button>
-      </div>
+      </button>
+    </div>
 
     <div class="mt-5 pt-4 border-t border-gray-100 flex justify-between items-center text-xs">
       <button onclick="toggleAuthMode()" id="toggle-auth-btn" class="text-blue-600 font-bold hover:underline">Create new account</button>
@@ -140,7 +140,7 @@
 
   <!-- App Content -->
   <div id="app-content" class="hidden">
-    <!-- Home Tab -->
+        <!-- Home Tab -->
     <main id="view-home" class="max-w-md mx-auto p-2 space-y-3">
       <div class="bg-white p-3 rounded-lg shadow-sm space-y-2 border border-gray-200">
         <div class="flex items-center space-x-2">
@@ -261,8 +261,8 @@
       <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-center space-y-3">
         <div class="w-20 h-20 rounded-full bg-blue-600 text-white mx-auto flex items-center justify-center font-bold text-2xl shadow-md" id="profile-avatar">
           U
-      </div>
-              <div>
+        </div>
+        <div>
           <h2 class="text-base font-bold text-gray-800" id="profile-name">User Name</h2>
           <p class="text-xs text-gray-400" id="profile-email">email@example.com</p>
         </div>
@@ -282,7 +282,7 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">My Posts</h3>
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">My Posts</h3>
         <div id="profile-posts-container" class="space-y-3">
           <p class="text-center text-xs text-gray-400 py-4">Loading your posts...</p>
         </div>
@@ -298,6 +298,18 @@
           <button onclick="closeEditProfileModal()" class="px-3 py-1.5 text-xs text-gray-600 font-semibold">Cancel</button>
           <button onclick="updateProfileDetails()" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold">Save Changes</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Post Comments Modal -->
+    <div id="comments-modal" class="hidden fixed inset-0 bg-black/60 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 space-y-3 shadow-xl max-h-[85vh] flex flex-col">
+        <div class="flex items-center justify-between border-b pb-2"><h3 class="font-bold text-sm text-gray-800">Comments</h3><button onclick="closeComments()" class="text-gray-500 text-xl" aria-label="Close comments">&times;</button></div>
+        <div id="comments-list" class="flex-1 overflow-y-auto space-y-3 min-h-24"><p class="text-xs text-gray-400 text-center py-4">Loading comments…</p></div>
+        <form onsubmit="submitComment(event)" class="flex gap-2 border-t pt-3">
+          <input id="comment-input" maxlength="2000" required placeholder="Write a comment…" class="flex-1 min-w-0 border rounded-full px-3 py-2 text-sm outline-none focus:border-blue-600" />
+          <button type="submit" class="bg-blue-600 text-white rounded-full px-4 py-2 text-xs font-bold">Send</button>
+        </form>
       </div>
     </div>
 
@@ -394,7 +406,8 @@
 
     let selectedImageFile = null;
     let activeChatUser = null;
-         let unsubscribeMessages = null;
+    let unsubscribeMessages = null;
+    let activeCommentsPostId = null;
 
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
@@ -411,7 +424,7 @@
         pwdInput.type = "text";
         icon.classList.replace("fa-eye", "fa-eye-slash");
       } else {
-        pwdInput.type = "password";
+            pwdInput.type = "password";
         icon.classList.replace("fa-eye-slash", "fa-eye");
       }
     };
@@ -526,7 +539,7 @@
       const isFollowing = userProfile.following.includes(targetUid);
       
       try {
-            const userRef = doc(db, "users", currentUser.uid);
+        const userRef = doc(db, "users", currentUser.uid);
         if (isFollowing) {
           userProfile.following = userProfile.following.filter(id => id !== targetUid);
           await updateDoc(userRef, { following: arrayRemove(targetUid) });
@@ -552,7 +565,6 @@
         const snapshot = await getDocs(collection(db, "users"));
         container.innerHTML = "";
         let count = 0;
-
         snapshot.forEach((docSnap) => {
           const userData = docSnap.data();
           if (userData.uid && userData.uid !== currentUser.uid) {
@@ -658,7 +670,7 @@
     function calculatePostScore(post) {
       const authorId = post.authorId || post.userUid;
       const isFollowing = userProfile.following.includes(authorId) ? 1.0 : 0.2;
-          const followScore = isFollowing * FEED_WEIGHTS.FOLLOW;
+      const followScore = isFollowing * FEED_WEIGHTS.FOLLOW;
 
       const now = Date.now();
       const postTime = post.createdAt ? post.createdAt.toMillis() : now;
@@ -695,7 +707,7 @@
           createdAt: serverTimestamp()
         });
         document.getElementById('reel-video-url').value = "";
-        document.getElementById('reel-caption').value = "";
+            document.getElementById('reel-caption').value = "";
         closeUploadModal();
         loadReelsFeed();
       } catch (e) {
@@ -790,7 +802,7 @@
     };
 
     window.openChatRoom = (targetUid, targetName) => {
-          activeChatUser = { uid: targetUid, name: targetName };
+      activeChatUser = { uid: targetUid, name: targetName };
       document.getElementById('chat-list-view').classList.add('hidden');
       document.getElementById('chat-room-view').classList.remove('hidden');
       document.getElementById('active-chat-name').innerText = targetName;
@@ -836,7 +848,7 @@
             </div>
           `;
         });
-        container.scrollTop = container.scrollHeight;
+            container.scrollTop = container.scrollHeight;
       });
     };
 
@@ -922,7 +934,7 @@
     // Profile Page Logic
     window.loadProfilePage = async () => {
       if (!currentUser) return;
-          const displayName = currentUser.displayName || currentUser.email.split('@')[0];
+      const displayName = currentUser.displayName || currentUser.email.split('@')[0];
       document.getElementById('profile-name').innerText = displayName;
       document.getElementById('profile-email').innerText = currentUser.email.endsWith('@mysocial.phone') ? 'Phone User' : currentUser.email;
       document.getElementById('profile-avatar').innerText = displayName[0].toUpperCase();
@@ -977,7 +989,7 @@
       theme: 'system', showOnlineStatus: true, searchable: true, readReceipts: true,
       emailNotif: false, lowData: false
     };
-
+    
     const SETTINGS_TRANSLATIONS = {
       en: {settingsTitle:'Settings & Privacy',settingsSubtitle:'Manage your account and app preferences.',accountSettings:'Account Settings',editProfile:'Edit Profile & Name',changePassword:'Change Password',changeEmail:'Change Email Address',downloadData:'Download My Profile Data',appearance:'Appearance & Language',language:'App Language',theme:'Theme',privacy:'Privacy',privateAccount:'Private Account Preference',privateHelp:'Requires feed and Firestore rules enforcement.',onlineStatus:'Show online status',searchable:'Allow profile discovery',readReceipts:'Read receipts preference',notifications:'Notifications & Data',pushNotifications:'Push notification preference',emailNotifications:'Email notification preference',autoplay:'Autoplay Reels',lowData:'Data saver preference',help:'Help & About',helpSupport:'Help & Support',privacyNotice:'Privacy information',appVersion:'App version',dangerZone:'Danger Zone',deleteAccount:'Delete Account Permanently',logout:'Log Out'},
       bn: {settingsTitle:'সেটিংস ও গোপনীয়তা',settingsSubtitle:'আপনার অ্যাকাউন্ট ও অ্যাপের পছন্দ নিয়ন্ত্রণ করুন।',accountSettings:'অ্যাকাউন্ট সেটিংস',editProfile:'প্রোফাইল ও নাম পরিবর্তন',changePassword:'পাসওয়ার্ড পরিবর্তন',changeEmail:'ইমেইল পরিবর্তন',downloadData:'আমার প্রোফাইল ডেটা ডাউনলোড',appearance:'চেহারা ও ভাষা',language:'অ্যাপের ভাষা',theme:'থিম',privacy:'গোপনীয়তা',privateAccount:'প্রাইভেট অ্যাকাউন্ট পছন্দ',privateHelp:'কার্যকর করতে ফিড ও Firestore Rules-এ নিয়ম প্রয়োগ করতে হবে।',onlineStatus:'অনলাইন স্ট্যাটাস দেখান',searchable:'প্রোফাইল খুঁজে পাওয়ার অনুমতি',readReceipts:'মেসেজ পড়ার রসিদ পছন্দ',notifications:'নোটিফিকেশন ও ডেটা',pushNotifications:'পুশ নোটিফিকেশন পছন্দ',emailNotifications:'ইমেইল নোটিফিকেশন পছন্দ',autoplay:'রিলস স্বয়ংক্রিয়ভাবে চালান',lowData:'কম ডেটা ব্যবহারের পছন্দ',help:'সাহায্য ও পরিচিতি',helpSupport:'সাহায্য ও সাপোর্ট',privacyNotice:'গোপনীয়তা তথ্য',appVersion:'অ্যাপ সংস্করণ',dangerZone:'সতর্কতামূলক অংশ',deleteAccount:'অ্যাকাউন্ট স্থায়ীভাবে মুছুন',logout:'লগআউট'}
@@ -1054,7 +1066,7 @@
       const newEmail = prompt('Enter your new email address:');
       if (!newEmail) return;
       const password = prompt('Enter your current password to verify your identity:');
-          if (!password) return;
+      if (!password) return;
       try {
         const credential = EmailAuthProvider.credential(currentUser.email, password);
         await reauthenticateWithCredential(currentUser, credential);
@@ -1117,132 +1129,63 @@
       }
     };
         // Feed & Post Creation Logic
-    window.openPostModal = () => document.getElementById('create-post-modal').classList.remove('hidden');
-    window.closePostModal = () => {
-      document.getElementById('create-post-modal').classList.add('hidden');
-      document.getElementById('post-text-input').value = "";
-      document.getElementById('image-upload-input').value = "";
-      selectedImageFile = null;
-      document.getElementById('image-preview-container').classList.add('hidden');
-    };
-
-    window.handleImageSelect = (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      selectedImageFile = file;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        document.getElementById('image-preview').src = e.target.result;
-        document.getElementById('image-preview-container').classList.remove('hidden');
-      };
-      reader.readAsDataURL(file);
-    };
-
-    window.removeSelectedImage = () => {
-      selectedImageFile = null;
-      document.getElementById('image-upload-input').value = "";
-      document.getElementById('image-preview-container').classList.add('hidden');
-    };
-
-    window.createPost = async () => {
-      const text = document.getElementById('post-text-input').value.trim();
-      if (!text && !selectedImageFile) return alert("Please write something or select an image.");
-
-      try {
-        let imageUrl = "";
-        if (selectedImageFile) {
-          const storageRef = ref(storage, `posts/${currentUser.uid}_${Date.now()}_${selectedImageFile.name}`);
-          const snapshot = await uploadBytes(storageRef, selectedImageFile);
-          imageUrl = await getDownloadURL(snapshot.ref);
-        }
-
-        await addDoc(collection(db, "posts"), {
-          textContent: text,
-          imageUrl: imageUrl,
-          authorId: currentUser.uid,
-          authorName: currentUser.displayName || currentUser.email.split('@')[0],
-          reactions: {},
-          commentCount: 0,
-          shareCount: 0,
-          createdAt: serverTimestamp()
-        });
-
-        closePostModal();
-        loadPersonalizedFeed(true);
-      } catch (e) {
-        alert("Failed to create post: " + e.message);
-      }
-    };
-
-    window.loadPersonalizedFeed = async (reset = false) => {
-      const container = document.getElementById('feed-container');
-      if (!container) return;
-
-      if (reset) {
-        container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">Loading personalized feed...</p>`;
-        lastVisibleDoc = null;
-      }
-
-      try {
-        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE_SIZE));
-        const snapshot = await getDocs(q);
-    
-        if (snapshot.empty && reset) {
-          container.innerHTML = `<div class="bg-white p-6 rounded-lg text-center text-xs text-gray-400 border border-gray-200">No posts available. Follow users or create a post!</div>`;
+    function escapeHTML(value) {
+          try {
+        const q = query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc'), limit(100));
+        const snap = await getDocs(q);
+        const list = document.getElementById('comments-list');
+        if (activeCommentsPostId !== postId) return;
+        if (snap.empty) {
+          list.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">No comments yet. Be the first to comment.</p>';
           return;
         }
-
-        let posts = [];
-        snapshot.forEach((docSnap) => {
-          const post = docSnap.data();
-          const authorId = post.authorId || post.userUid;
-          if (!userProfile.hiddenPosts.includes(docSnap.id)) {
-            posts.push({ id: docSnap.id, ...post, score: calculatePostScore(post) });
-          }
-        });
-
-        posts.sort((a, b) => b.score - a.score);
-
-        if (reset) container.innerHTML = "";
-
-        posts.forEach((post) => {
-          const postId = post.id;
-          const authorName = post.authorName || "User";
-          const likesCount = Object.keys(post.reactions || {}).length;
-          const isLiked = currentUser && post.reactions && post.reactions[currentUser.uid];
-
-          const postHtml = `
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 text-xs overflow-hidden space-y-2 p-3">
-              <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                  <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">${authorName[0].toUpperCase()}</div>
-                  <div>
-                    <h4 class="font-bold text-gray-800">${authorName}</h4>
-                    <span class="text-[10px] text-gray-400">Personalized Feed</span>
-                  </div>
-                </div>
-                <button onclick="hidePost('${postId}')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
-              </div>
-
-              ${post.textContent ? `<p class="text-gray-700 leading-relaxed">${post.textContent}</p>` : ''}
-              ${post.imageUrl ? `<img src="${post.imageUrl}" class="w-full h-auto rounded-lg max-h-80 object-cover" />` : ''}
-
-              <div class="flex justify-between items-center pt-2 border-t border-gray-100 text-gray-500 font-semibold">
-                <button onclick="toggleLikePost('${postId}')" class="flex items-center space-x-1 ${isLiked ? 'text-blue-600' : 'hover:text-blue-600'} transition">
-                  <i class="fa-solid fa-thumbs-up"></i>
-                  <span>Like (${likesCount})</span>
-                </button>
-                <button onclick="sharePost('${postId}')" class="hover:text-blue-600 transition">
-                  <i class="fa-solid fa-share"></i> Share
-                </button>
-              </div>
-            </div>
-          `;
-          container.innerHTML += postHtml;
-        });
+        list.innerHTML = snap.docs.map(d => {
+          const c = d.data();
+          return `<div class="bg-gray-50 rounded-xl p-3"><p class="font-bold text-xs text-gray-800">${escapeHTML(c.authorName || 'User')}</p><p class="text-sm text-gray-700 whitespace-pre-wrap break-words mt-1">${escapeHTML(c.text || '')}</p></div>`;
+        }).join('');
+        list.scrollTop = list.scrollHeight;
       } catch (e) {
-        console.error("Error loading feed:", e);
-        container.innerHTML = `<p class="text-center text-xs text-red-400 py-6">Failed to load feed.</p>`;
+        console.error('Could not load comments:', e);
+        document.getElementById('comments-list').innerHTML = '<p class="text-xs text-red-500 text-center py-4">Comments could not be loaded. Check Firestore Rules.</p>';
+      }
+    };
+
+    window.closeComments = () => {
+      document.getElementById('comments-modal').classList.add('hidden');
+      activeCommentsPostId = null;
+    };
+
+    window.submitComment = async (event) => {
+      event.preventDefault();
+      const postId = activeCommentsPostId;
+      const input = document.getElementById('comment-input');
+      const text = input.value.trim();
+      if (!currentUser || !postId || !text) return;
+      const button = event.submitter;
+      if (button) button.disabled = true;
+      try {
+        const postRef = doc(db, 'posts', postId);
+        const postSnap = await getDoc(postRef);
+        if (!postSnap.exists()) throw new Error('This post no longer exists.');
+        await addDoc(collection(db, 'posts', postId, 'comments'), {
+          text,
+          authorId: currentUser.uid,
+          authorName: currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
+          createdAt: serverTimestamp()
+        });
+        await updateDoc(postRef, { commentCount: increment(1) });
+        const ownerId = postSnap.data().authorId || postSnap.data().userUid;
+        if (ownerId && ownerId !== currentUser.uid) {
+          await sendNotification(ownerId, `${currentUser.displayName || 'Someone'} commented on your post.`, 'comment');
+        }
+        input.value = '';
+        await openComments(postId);
+        await loadPersonalizedFeed(false);
+      } catch (e) {
+        console.error('Comment failed:', e);
+        alert('Could not post comment: ' + (e.message || 'Please try again.'));
+      } finally {
+        if (button) button.disabled = false;
       }
     };
 
@@ -1281,10 +1224,21 @@
 
     window.sharePost = async (postId) => {
       try {
-        await updateDoc(doc(db, "posts", postId), { shareCount: increment(1) });
-        alert("Post link copied to clipboard!");
+        const shareUrl = `${window.location.origin}${window.location.pathname}#post-${encodeURIComponent(postId)}`;
+        if (navigator.share) {
+          try { await navigator.share({ title: 'Mysocial post', url: shareUrl }); }
+          catch (shareError) { if (shareError?.name === 'AbortError') return; throw shareError; }
+        } else if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(shareUrl);
+          alert('Post link copied. You can now share it.');
+        } else {
+          window.prompt('Copy this post link:', shareUrl);
+        }
+        await updateDoc(doc(db, 'posts', postId), { shareCount: increment(1) });
+        await loadPersonalizedFeed(false);
       } catch (e) {
-        console.error("Error sharing post:", e);
+        console.error('Error sharing post:', e);
+        alert('Could not share this post. Check your browser permissions and Firestore Rules.');
       }
     };
 
