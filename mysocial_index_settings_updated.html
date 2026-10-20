@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>mysocial - Social Media App</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    @keyframes logoPop {
+      0% { transform: scale(0.6); opacity: 0; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes textFadeUp {
+      0% { opacity: 0; transform: translateY(15px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-logo { animation: logoPop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .animate-text { animation: textFadeUp 1s ease-out 0.4s forwards; opacity: 0; }
+
+    .reaction-box {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      background: white;
+      border-radius: 9999px;
+      padding: 4px 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      z-index: 20;
+    }
+    .group:hover .reaction-box { display: flex; }
+    
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    body.theme-dark { background:#111827 !important; color:#f3f4f6 !important; }
+    body.theme-dark header, body.theme-dark .settings-card, body.theme-dark #view-settings .bg-white,
+    body.theme-dark #view-profile .bg-white, body.theme-dark #view-home .bg-white,
+    body.theme-dark #view-notifications .bg-white, body.theme-dark #view-chat,
+    body.theme-dark #chat-list-view, body.theme-dark #chat-room-view { background:#1f2937 !important; color:#f3f4f6 !important; border-color:#374151 !important; }
+    body.theme-dark .settings-section-title, body.theme-dark .settings-row:hover { background:#111827 !important; color:#f3f4f6 !important; }
+    body.theme-dark .settings-row, body.theme-dark .settings-row span, body.theme-dark .settings-row label,
+    body.theme-dark #view-settings h2, body.theme-dark #view-settings h3, body.theme-dark #view-settings p,
+    body.theme-dark #view-profile h2, body.theme-dark #view-home input { color:#f3f4f6 !important; }
+    body.theme-dark .settings-help { color:#9ca3af !important; }
+    body.theme-dark input, body.theme-dark select, body.theme-dark textarea { background:#374151 !important; color:#f9fafb !important; border-color:#4b5563 !important; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 pb-16 transition-colors duration-300">
+
+  <!-- Splash Screen -->
+  <div id="splash-screen" class="fixed inset-0 bg-white z-[100] flex flex-col justify-between items-center py-12 transition-opacity duration-500">
+    <div></div>
+    <div class="flex flex-col items-center animate-logo">
+      <div class="w-20 h-20 rounded-2xl shadow-md border border-gray-100 flex items-center justify-center bg-blue-600">
+        <span class="text-white font-black text-4xl tracking-tight">M</span>
+      </div>
+    </div>
+    <div class="flex flex-col items-center animate-text space-y-1">
+      <span class="text-[11px] text-gray-400 font-medium tracking-widest uppercase">from</span>
+      <h1 class="text-xl font-black text-blue-600 tracking-wider">mysocial</h1>
+    </div>
+  </div>
+
+  <!-- Header & Navigation -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50 transition-colors duration-300">
+    <div class="px-4 py-2.5 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-600 tracking-wide">mysocial</h1>
+      <div class="flex space-x-2 items-center">
+        <span id="user-display-name" class="text-xs font-semibold text-gray-600"></span>
+        <button id="logout-btn" onclick="handleLogout()" class="hidden text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded-md font-semibold">Logout</button>
+      </div>
+    </div>
+
+    <nav class="flex justify-around border-t border-gray-100 text-gray-500 font-medium text-sm">
+      <button onclick="switchTab('home')" id="nav-home" class="w-full py-2.5 text-blue-600 border-b-2 border-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-house text-lg"></i>
+      </button>
+      <button onclick="switchTab('reels')" id="nav-reels" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-clapperboard text-lg"></i>
+      </button>
+      <button onclick="switchTab('friends')" id="nav-friends" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-user-group text-lg"></i>
+      </button>
+      <button onclick="switchTab('chat')" id="nav-chat" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-comments text-lg"></i>
+      </button>
+      <button onclick="switchTab('notifications')" id="nav-notif" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-bell text-lg"></i>
+      </button>
+      <button onclick="switchTab('profile')" id="nav-profile" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-user text-lg"></i>
+      </button>
+      <button onclick="switchTab('settings')" id="nav-settings" class="w-full py-2.5 hover:text-blue-600 flex justify-center items-center">
+        <i class="fa-solid fa-gear text-lg"></i>
+      </button>
+    </nav>
+  </header>
+    <!-- Auth Container -->
+  <div id="auth-container" class="max-w-md mx-auto my-6 p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="text-center mb-5">
+      <h2 class="text-2xl font-extrabold text-blue-600" id="auth-title">Welcome to mysocial</h2>
+      <p class="text-xs text-gray-500 mt-1" id="auth-subtitle">Connect with friends and the world around you.</p>
+    </div>
+    
+    <div class="space-y-3.5">
+      <div id="name-field" class="hidden">
+        <input type="text" id="auth-name" placeholder="Full Name" class="w-full border border-gray-300 px-3.5 py-2 rounded-lg text-sm outline-none focus:border-blue-600">
+      </div>
+      <div>
+        <input type="text" id="auth-email-phone" placeholder="Email address or Mobile number" class="w-full border border-gray-300 px-3.5 py-2 rounded-lg text-sm outline-none focus:border-blue-600">
+      </div>
+      <div class="relative">
+        <input type="password" id="auth-password" placeholder="Password" class="w-full border border-gray-300 px-3.5 py-2 rounded-lg text-sm outline-none focus:border-blue-600 pr-10">
+        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-sm">
+          <i id="password-toggle-icon" class="fa-solid fa-eye"></i>
+        </button>
+      </div>
+      <button onclick="handleAuth()" id="auth-submit-btn" class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition">Log In</button>
+      <div class="flex items-center my-3">
+        <div class="flex-grow border-t border-gray-200"></div>
+        <span class="px-2 text-xs text-gray-400 font-medium">OR</span>
+        <div class="flex-grow border-t border-gray-200"></div>
+      </div>
+      <button onclick="handleGoogleLogin()" class="w-full border border-gray-300 bg-white text-gray-700 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-50 flex items-center justify-center space-x-2 transition">
+        <i class="fa-brands fa-google text-red-500 text-base"></i>
+        <span>Continue with Google</span>
+      </button>
+    </div>
+
+    <div class="mt-5 pt-4 border-t border-gray-100 flex justify-between items-center text-xs">
+      <button onclick="toggleAuthMode()" id="toggle-auth-btn" class="text-blue-600 font-bold hover:underline">Create new account</button>
+      <button onclick="showForgotPassword()" id="forgot-password-btn" class="text-gray-500 hover:text-blue-600 hover:underline">Forgot password?</button>
+    </div>
+  </div>
+
+  <!-- App Content -->
+  <div id="app-content" class="hidden">
+    <!-- Home Tab -->
+    <main id="view-home" class="max-w-md mx-auto p-2 space-y-3">
+      <div class="bg-white p-3 rounded-lg shadow-sm space-y-2 border border-gray-200">
+        <div class="flex items-center space-x-2">
+          <div id="user-avatar" class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">U</div>
+          <input type="text" id="post-input" placeholder="What's on your mind?" class="w-full bg-gray-100 rounded-full px-4 py-2 text-sm outline-none border hover:bg-gray-200 focus:bg-white focus:border-blue-500 transition">
+        </div>
+
+        <div id="image-preview-container" class="hidden relative mt-2">
+          <img id="image-preview" class="max-h-40 rounded-lg object-cover mx-auto" />
+          <button onclick="removeImagePreview()" class="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center">&times;</button>
+        </div>
+
+        <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+          <label class="cursor-pointer text-gray-500 hover:text-blue-600 text-sm px-2 flex items-center space-x-1">
+            <i class="fa-solid fa-image text-lg"></i>
+            <span class="text-xs font-semibold">Photo</span>
+            <input type="file" id="post-image-input" accept="image/*" class="hidden" onchange="previewImage(this)">
+          </label>
+          <button onclick="createPost()" class="bg-blue-600 text-white px-5 py-1.5 rounded-full text-xs font-bold hover:bg-blue-700 transition">Post</button>
+        </div>
+      </div>
+          <!-- Reels Tab -->
+    <div id="view-reels" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-black relative overflow-hidden flex flex-col">
+      <div class="absolute top-2 right-4 z-30">
+        <button onclick="openUploadModal()" class="bg-white/25 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1.5 hover:bg-white/35 transition shadow-sm">
+          <i class="fa-solid fa-plus text-[10px]"></i>
+          <span>Upload Reel</span>
+        </button>
+      </div>
+
+      <div id="reels-container" class="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-none">
+        <div class="h-full flex items-center justify-center text-gray-400 text-xs">
+          Loading reels...
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Reel Modal -->
+    <div id="reel-upload-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-2xl p-4 space-y-3 shadow-xl">
+        <h3 class="font-bold text-sm text-gray-800">Upload New Reel</h3>
+        <input type="text" id="reel-video-url" placeholder="Enter Video URL (MP4)" class="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-blue-600">
+        <input type="text" id="reel-caption" placeholder="Write a caption..." class="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-blue-600">
+        <div class="flex justify-end space-x-2 pt-2">
+          <button onclick="closeUploadModal()" class="px-3 py-1.5 text-xs text-gray-600 font-semibold">Cancel</button>
+          <button onclick="uploadReel()" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold">Post Reel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Friends & Follow Tab -->
+    <div id="view-friends" class="hidden max-w-md mx-auto p-4 space-y-3">
+      <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 space-y-3">
+        <div class="flex border-b border-gray-100 pb-2 text-xs font-semibold">
+          <button onclick="switchFriendsSubTab('discover')" id="subtab-discover" class="flex-1 text-blue-600 border-b-2 border-blue-600 pb-1 transition">Discover People</button>
+          <button onclick="switchFriendsSubTab('following')" id="subtab-following" class="flex-1 text-gray-500 pb-1 transition">Following List</button>
+        </div>
+
+        <div id="friends-section-discover" class="space-y-2">
+          <div id="suggested-users-container" class="space-y-2 pt-1">
+            <p class="text-xs text-gray-400 text-center py-2">Loading users...</p>
+          </div>
+        </div>
+
+        <div id="friends-section-following" class="hidden space-y-2">
+          <div id="following-users-container" class="space-y-2 pt-1">
+            <p class="text-xs text-gray-400 text-center py-2">Loading following list...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+        <!-- Chat Tab -->
+    <div id="view-chat" class="hidden max-w-md mx-auto h-[calc(100vh-110px)] bg-white flex flex-col border-x border-gray-200">
+      <div id="chat-list-view" class="h-full flex flex-col">
+        <div class="p-3 border-b border-gray-200 font-bold text-sm text-gray-800">
+          <i class="fa-solid fa-comments text-blue-600 mr-1"></i> Messages
+        </div>
+        <div id="conversations-container" class="flex-1 overflow-y-auto divide-y divide-gray-100">
+          <p class="text-center text-xs text-gray-400 py-6">Loading conversations...</p>
+        </div>
+      </div>
+
+      <div id="chat-room-view" class="hidden h-full flex flex-col">
+        <div class="p-3 border-b border-gray-200 flex items-center space-x-3 bg-gray-50">
+          <button onclick="closeChatRoom()" class="text-gray-600 hover:text-blue-600 text-sm">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs" id="active-chat-avatar">U</div>
+          <h3 class="font-bold text-sm text-gray-800" id="active-chat-name">Chat Name</h3>
+        </div>
+
+        <div id="chat-messages-container" class="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50/50">
+          <p class="text-center text-xs text-gray-400 py-4">Loading messages...</p>
+        </div>
+
+        <div class="p-2.5 border-t border-gray-200 bg-white flex items-center space-x-2">
+          <input type="text" id="chat-message-input" placeholder="Type a message..." class="w-full bg-gray-100 rounded-full px-4 py-2 text-xs outline-none border focus:bg-white focus:border-blue-500 transition">
+          <button onclick="sendChatMessage()" class="bg-blue-600 text-white rounded-full w-9 h-9 flex items-center justify-center text-xs hover:bg-blue-700 transition flex-shrink-0">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications Tab -->
+    <div id="view-notifications" class="hidden max-w-md mx-auto p-2 space-y-2">
+      <div class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
+        <h2 class="text-sm font-bold text-gray-800"><i class="fa-solid fa-bell text-blue-600 mr-1"></i> Notifications</h2>
+        <button onclick="markAllNotificationsRead()" class="text-[11px] text-blue-600 font-semibold hover:underline">Mark all as read</button>
+      </div>
+
+      <div id="notifications-container" class="space-y-2">
+        <p class="text-center text-xs text-gray-400 py-4">Loading notifications...</p>
+      </div>
+    </div>
+        <!-- Profile Tab -->
+    <div id="view-profile" class="hidden max-w-md mx-auto p-4 space-y-3">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-center space-y-3">
+        <div class="w-20 h-20 rounded-full bg-blue-600 text-white mx-auto flex items-center justify-center font-bold text-2xl shadow-md" id="profile-avatar">
+          U
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-gray-800" id="profile-name">User Name</h2>
+          <p class="text-xs text-gray-400" id="profile-email">email@example.com</p>
+        </div>
+        <div class="flex justify-center space-x-6 py-2 border-t border-b border-gray-100 text-xs">
+          <div>
+            <span class="font-bold text-gray-800 block" id="profile-posts-count">0</span>
+            <span class="text-gray-400">Posts</span>
+          </div>
+          <div>
+            <span class="font-bold text-gray-800 block" id="profile-following-count">0</span>
+            <span class="text-gray-400">Following</span>
+          </div>
+        </div>
+        <button onclick="openEditProfileModal()" class="w-full bg-gray-100 text-gray-700 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">
+          Edit Profile
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">My Posts</h3>
+        <div id="profile-posts-container" class="space-y-3">
+          <p class="text-center text-xs text-gray-400 py-4">Loading your posts...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="hidden fixed inset-0 bg-black/70 z-[110] flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-2xl p-4 space-y-3 shadow-xl">
+        <h3 class="font-bold text-sm text-gray-800">Edit Profile</h3>
+        <input type="text" id="edit-profile-name" placeholder="Full Name" class="w-full border rounded-lg px-3 py-2 text-xs outline-none focus:border-blue-600">
+        <div class="flex justify-end space-x-2 pt-2">
+          <button onclick="closeEditProfileModal()" class="px-3 py-1.5 text-xs text-gray-600 font-semibold">Cancel</button>
+          <button onclick="updateProfileDetails()" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="view-settings" class="hidden max-w-md mx-auto p-3 space-y-3 min-h-[calc(100vh-110px)] pb-10">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-base font-bold text-gray-800"><i class="fa-solid fa-gear text-blue-600 mr-2"></i><span data-i18n="settingsTitle">Settings & Privacy</span></h2>
+        <p class="text-xs text-gray-500 mt-1" data-i18n="settingsSubtitle">Manage your account and app preferences.</p>
+      </div>
+
+      <section class="settings-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden text-sm">
+        <h3 class="settings-section-title p-3 bg-gray-50 font-bold text-gray-700 border-b" data-i18n="accountSettings">Account Settings</h3>
+        <div class="divide-y divide-gray-100">
+          <button onclick="openEditProfileModal()" class="settings-row w-full p-3 flex justify-between items-center text-left hover:bg-gray-50"><span><i class="fa-solid fa-user-pen mr-2 text-blue-600"></i><span data-i18n="editProfile">Edit Profile & Name</span></span><i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i></button>
+          <button onclick="promptChangePassword()" class="settings-row w-full p-3 flex justify-between items-center text-left hover:bg-gray-50"><span><i class="fa-solid fa-key mr-2 text-blue-600"></i><span data-i18n="changePassword">Change Password</span></span><i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i></button>
+          <button onclick="changeEmailAddress()" class="settings-row w-full p-3 flex justify-between items-center text-left hover:bg-gray-50"><span><i class="fa-solid fa-envelope mr-2 text-blue-600"></i><span data-i18n="changeEmail">Change Email Address</span></span><i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i></button>
+          <button onclick="exportMyData()" class="settings-row w-full p-3 flex justify-between items-center text-left hover:bg-gray-50"><span><i class="fa-solid fa-download mr-2 text-blue-600"></i><span data-i18n="downloadData">Download My Profile Data</span></span><i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i></button>
+        </div>
+      </section>
+
+      <section class="settings-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden text-sm">
+        <h3 class="settings-section-title p-3 bg-gray-50 font-bold text-gray-700 border-b" data-i18n="appearance">Appearance & Language</h3>
+        <div class="settings-row p-3 flex justify-between items-center border-b border-gray-100"><label for="lang-selector"><i class="fa-solid fa-language mr-2 text-blue-600"></i><span data-i18n="language">App Language</span></label><select id="lang-selector" onchange="changeAppLanguage(this.value)" class="border rounded-lg px-2 py-1.5 bg-gray-50 outline-none font-semibold"><option value="en">English</option><option value="bn">বাংলা</option></select></div>
+        <div class="settings-row p-3 flex justify-between items-center"><label for="theme-selector"><i class="fa-solid fa-circle-half-stroke mr-2 text-blue-600"></i><span data-i18n="theme">Theme</span></label><select id="theme-selector" onchange="setAppTheme(this.value)" class="border rounded-lg px-2 py-1.5 bg-gray-50 outline-none font-semibold"><option value="system">System default</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+      </section>
+
+      <section class="settings-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden text-sm">
+        <h3 class="settings-section-title p-3 bg-gray-50 font-bold text-gray-700 border-b" data-i18n="privacy">Privacy</h3>
+        <div class="settings-row p-3 flex justify-between items-center border-b border-gray-100"><label for="setting-private"><span data-i18n="privateAccount">Private Account Preference</span><small class="settings-help block text-xs text-gray-500 mt-1" data-i18n="privateHelp">Requires feed and Firestore rules enforcement.</small></label><input type="checkbox" id="setting-private" onchange="saveUserSetting('isPrivate', this.checked)" class="w-5 h-5 accent-blue-600"></div>
+        <div class="settings-row p-3 flex justify-between items-center border-b border-gray-100"><label for="setting-online" data-i18n="onlineStatus">Show online status</label><input type="checkbox" id="setting-online" onchange="saveUserSetting('showOnlineStatus', this.checked)" checked class="w-5 h-5 accent-blue-600"></div>
+        <div class="settings-row p-3 flex justify-between items-center border-b border-gray-100"><label for="setting-searchable" data-i18n="searchable">Allow profile discovery</label><input type="checkbox" id="setting-searchable" onchange="saveUserSetting('searchable', this.checked)" checked class="w-5 h-5 accent-blue-600"></div>
+        <div class="settings-row p-3 flex justify-between items-center"><label for="setting-readreceipts" data-i18n="readReceipts">Read receipts preference</label><input type="checkbox" id="setting-readreceipts" onchange="saveUserSetting('readReceipts', this.checked)" checked class="w-5 h-5 accent-blue-600"></div>
+      </section>
+
+      <section class="settings-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden text-sm">
+        <h3 class="settings-section-title p-3 bg-gray-50 font-bold text-gray-700 border-b" data-i18n="notifications">Notifications & Data</h3>
+        <div class="settings-row p-3 flex justify-between items-center border-b border-gray-100"><label for="setting-notif" data-i18n="pushNotifications">Push notification preference</label><input type="checkbox" id="setting-notif" onchange="saveUserSetting('pushNotif', this.checked)" checked class="w-5 h-5 accent-blue-600"></div>
+        <div class="settings-row p-3 flex justify-between items-center border-b border-gray-100"><label for="setting-emailnotif" data-i18n="emailNotifications">Email notification preference</label><input type="checkbox" id="setting-emailnotif" onchange="saveUserSetting('emailNotif', this.checked)" class="w-5 h-5 accent-blue-600"></div>
+        <div class="settings-row p-3 flex justify-between items-center border-b border-gray-100"><label for="setting-autoplay" data-i18n="autoplay">Autoplay Reels</label><input type="checkbox" id="setting-autoplay" onchange="saveUserSetting('autoplayReels', this.checked)" checked class="w-5 h-5 accent-blue-600"></div>
+        <div class="settings-row p-3 flex justify-between items-center"><label for="setting-lowdata" data-i18n="lowData">Data saver preference</label><input type="checkbox" id="setting-lowdata" onchange="saveUserSetting('lowData', this.checked)" class="w-5 h-5 accent-blue-600"></div>
+      </section>
+
+      <section class="settings-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden text-sm">
+        <h3 class="settings-section-title p-3 bg-gray-50 font-bold text-gray-700 border-b" data-i18n="help">Help & About</h3>
+        <button onclick="showAppHelp()" class="settings-row w-full p-3 flex justify-between items-center text-left hover:bg-gray-50"><span><i class="fa-solid fa-circle-question mr-2 text-blue-600"></i><span data-i18n="helpSupport">Help & Support</span></span><i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i></button>
+        <button onclick="showPrivacyNotice()" class="settings-row w-full p-3 flex justify-between items-center text-left hover:bg-gray-50"><span><i class="fa-solid fa-shield-halved mr-2 text-blue-600"></i><span data-i18n="privacyNotice">Privacy information</span></span><i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i></button>
+        <div class="settings-row p-3 flex justify-between items-center"><span><i class="fa-solid fa-circle-info mr-2 text-blue-600"></i><span data-i18n="appVersion">App version</span></span><span class="text-gray-400">v1.1.0</span></div>
+      </section>
+
+      <section class="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden text-sm p-3 space-y-2">
+        <h3 class="font-bold text-red-600" data-i18n="dangerZone">Danger Zone</h3>
+        <button onclick="handleAccountDeletion()" class="w-full bg-red-50 text-red-600 border border-red-200 py-2.5 rounded-lg font-bold hover:bg-red-100 transition"><i class="fa-solid fa-trash mr-2"></i><span data-i18n="deleteAccount">Delete Account Permanently</span></button>
+        <button onclick="handleLogout()" class="w-full bg-gray-100 text-gray-700 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition"><i class="fa-solid fa-right-from-bracket mr-2"></i><span data-i18n="logout">Log Out</span></button>
+      </section>
+    </div>
+  </div>
+    <!-- Firebase & App Logic Engine -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
+      signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, 
+      onAuthStateChanged, signOut, updateProfile,
+      EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+      getFirestore, collection, addDoc, getDocs, getDoc,
+      query, orderBy, limit, startAfter, serverTimestamp, 
+      doc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove, onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBPZ5J4zXZ54UX22rMryU2AT5buy5oOfNo",
+      authDomain: "mysocial-7a273.firebaseapp.com",
+      databaseURL: "https://mysocial-7a273-default-rtdb.firebaseio.com",
+      projectId: "mysocial-7a273",
+      storageBucket: "mysocial-7a273.firebasestorage.app",
+      messagingSenderId: "25826997817",
+      appId: "1:25826997817:web:08b203b0489469b809bfe8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    let isRegisterMode = false;
+    let currentUser = null;
+    let userProfile = { following: [], hiddenPosts: [], affinity: {} };
+    let lastVisibleDoc = null;
+    const PAGE_SIZE = 15;
+    const FEED_WEIGHTS = { FOLLOW: 40, RECENCY: 30, ENGAGEMENT: 15, AFFINITY: 15 };
+
+    let selectedImageFile = null;
+    let activeChatUser = null;
+    let unsubscribeMessages = null;
+
+    setTimeout(() => {
+      const splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => splash.remove(), 500);
+      }
+    }, 1800);
+
+    window.togglePasswordVisibility = () => {
+      const pwdInput = document.getElementById('auth-password');
+      const icon = document.getElementById('password-toggle-icon');
+      if (pwdInput.type === "password") {
+        pwdInput.type = "text";
+        icon.classList.replace("fa-eye", "fa-eye-slash");
+      } else {
+        pwdInput.type = "password";
+        icon.classList.replace("fa-eye-slash", "fa-eye");
+      }
+    };
+
+    window.toggleAuthMode = () => {
+      isRegisterMode = !isRegisterMode;
+      document.getElementById('name-field').classList.toggle('hidden', !isRegisterMode);
+      document.getElementById('auth-title').innerText = isRegisterMode ? "Create a new account" : "Welcome to mysocial";
+      document.getElementById('auth-submit-btn').innerText = isRegisterMode ? "Sign Up" : "Log In";
+      document.getElementById('toggle-auth-btn').innerText = isRegisterMode ? "Already have an account? Log In" : "Create new account";
+      document.getElementById('forgot-password-btn').classList.toggle('hidden', isRegisterMode);
+    };
+
+    function parseInputToEmail(inputVal) {
+      inputVal = inputVal.trim();
+      if (inputVal.includes('@')) return inputVal;
+      const cleanPhone = inputVal.replace(/[^0-9]/g, '');
+      if (cleanPhone.length >= 10) return `${cleanPhone}@mysocial.phone`;
+      return null;
+    }
+
+    window.handleAuth = async () => {
+      const rawInput = document.getElementById('auth-email-phone').value;
+      const password = document.getElementById('auth-password').value;
+      const fullName = document.getElementById('auth-name').value.trim();
+      const email = parseInputToEmail(rawInput);
+
+      if (!email) return alert("Please enter a valid Email address or Mobile number.");
+      if (!password || password.length < 6) return alert("Password must be at least 6 characters long.");
+
+      try {
+        if (isRegisterMode) {
+          if (!fullName) return alert("Please enter your Full Name.");
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          await updateProfile(user, { displayName: fullName });
+          await setDoc(doc(db, "users", user.uid), { uid: user.uid, name: fullName, email: user.email, following: [], hiddenPosts: [], createdAt: serverTimestamp() });
+          alert("Account created successfully!");
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (error) {
+        alert("Authentication Error: " + error.message);
+      }
+    };
+
+    window.handleGoogleLogin = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid, name: user.displayName || "Google User", email: user.email, photoURL: user.photoURL || "", following: [], hiddenPosts: [], createdAt: serverTimestamp()
+        }, { merge: true });
+      } catch (error) {
+        alert("Google Login Error: " + error.message);
+      }
+    };
+
+    window.showForgotPassword = async () => {
+      const rawInput = prompt("Enter your registered Email address:");
+      if (!rawInput) return;
+      const email = parseInputToEmail(rawInput);
+      if (!email || email.endsWith('@mysocial.phone')) return alert("Please enter a valid registered email address.");
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Password reset email sent!");
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    };
+
+    window.handleLogout = () => signOut(auth);
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (user) {
+        document.getElementById('auth-container').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        document.getElementById('logout-btn').classList.remove('hidden');
+        
+        const showName = user.displayName || user.email.split('@')[0];
+        document.getElementById('user-display-name').innerText = showName;
+        document.getElementById('user-avatar').innerText = showName[0].toUpperCase();
+
+        await loadUserProfile();
+        await loadUserSettings();
+        loadPersonalizedFeed(true);
+        loadSuggestedUsers();
+      } else {
+        document.getElementById('auth-container').classList.remove('hidden');
+        document.getElementById('app-content').classList.add('hidden');
+        document.getElementById('logout-btn').classList.add('hidden');
+      }
+    });
+
+    async function loadUserProfile() {
+      if (!currentUser) return;
+      try {
+        const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          userProfile.following = data.following || [];
+          userProfile.hiddenPosts = data.hiddenPosts || [];
+        }
+      } catch (e) {
+        console.error("Error loading profile signals:", e);
+      }
+    }
+        window.toggleFollowUser = async (targetUid) => {
+      if (!currentUser) return;
+      const isFollowing = userProfile.following.includes(targetUid);
+      
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        if (isFollowing) {
+          userProfile.following = userProfile.following.filter(id => id !== targetUid);
+          await updateDoc(userRef, { following: arrayRemove(targetUid) });
+        } else {
+          userProfile.following.push(targetUid);
+          await updateDoc(userRef, { following: arrayUnion(targetUid) });
+          sendNotification(targetUid, `${currentUser.displayName || 'Someone'} started following you.`, 'follow');
+        }
+        loadSuggestedUsers();
+        loadFollowingUsers();
+        loadPersonalizedFeed(true);
+      } catch (e) {
+        alert("Follow action failed: " + e.message);
+      }
+    };
+
+    async function loadSuggestedUsers() {
+      const container = document.getElementById('suggested-users-container');
+      if (!container) return;
+      container.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">Loading users...</p>`;
+
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        container.innerHTML = "";
+        let count = 0;
+
+        snapshot.forEach((docSnap) => {
+          const userData = docSnap.data();
+          if (userData.uid && userData.uid !== currentUser.uid) {
+            count++;
+            const isFollowing = userProfile.following.includes(userData.uid);
+            const name = userData.name || "User";
+
+            const userHtml = `
+              <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100 text-xs">
+                <div class="flex items-center space-x-2">
+                  <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                    ${name[0].toUpperCase()}
+                  </div>
+                  <span class="font-semibold text-gray-800">${name}</span>
+                </div>
+                <button onclick="toggleFollowUser('${userData.uid}')" class="px-3 py-1 rounded-md font-bold transition ${isFollowing ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-blue-600 text-white hover:bg-blue-700'}">
+                  ${isFollowing ? 'Following' : 'Follow'}
+                </button>
+              </div>
+            `;
+            container.innerHTML += userHtml;
+          }
+        });
+
+        if (count === 0) {
+          container.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">No other users found.</p>`;
+        }
+      } catch (e) {
+        console.error("Error loading users:", e);
+        container.innerHTML = `<p class="text-xs text-red-400 text-center py-2">Failed to load users.</p>`;
+      }
+    }
+
+    window.switchFriendsSubTab = (subTab) => {
+      const discoverSec = document.getElementById('friends-section-discover');
+      const followingSec = document.getElementById('friends-section-following');
+      const discoverBtn = document.getElementById('subtab-discover');
+      const followingBtn = document.getElementById('subtab-following');
+
+      if (subTab === 'discover') {
+        discoverSec.classList.remove('hidden');
+        followingSec.classList.add('hidden');
+        discoverBtn.className = "flex-1 text-blue-600 border-b-2 border-blue-600 pb-1 transition";
+        followingBtn.className = "flex-1 text-gray-500 pb-1 transition";
+        loadSuggestedUsers();
+      } else {
+        discoverSec.classList.add('hidden');
+        followingSec.classList.remove('hidden');
+        followingBtn.className = "flex-1 text-blue-600 border-b-2 border-blue-600 pb-1 transition";
+        discoverBtn.className = "flex-1 text-gray-500 pb-1 transition";
+        loadFollowingUsers();
+      }
+    };
+
+    window.loadFollowingUsers = async () => {
+      const container = document.getElementById('following-users-container');
+      if (!container || !currentUser) return;
+
+      if (!userProfile.following || userProfile.following.length === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">You are not following anyone yet.</p>`;
+        return;
+      }
+
+      container.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">Loading following list...</p>`;
+
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        container.innerHTML = "";
+        let count = 0;
+
+        snapshot.forEach((docSnap) => {
+          const userData = docSnap.data();
+          if (userData.uid && userProfile.following.includes(userData.uid)) {
+            count++;
+            const name = userData.name || "User";
+
+            const userHtml = `
+              <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100 text-xs">
+                <div class="flex items-center space-x-2">
+                  <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                    ${name[0].toUpperCase()}
+                  </div>
+                  <span class="font-semibold text-gray-800">${name}</span>
+                </div>
+                <button onclick="toggleFollowUser('${userData.uid}')" class="px-3 py-1 rounded-md font-bold transition bg-gray-200 text-gray-700 hover:bg-gray-300">
+                  Unfollow
+                </button>
+              </div>
+            `;
+            container.innerHTML += userHtml;
+          }
+        });
+
+        if (count === 0) {
+          container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">You are not following anyone yet.</p>`;
+        }
+      } catch (e) {
+        console.error("Error loading following users:", e);
+        container.innerHTML = `<p class="text-xs text-red-400 text-center py-2">Failed to load following list.</p>`;
+      }
+    };
+
+    function calculatePostScore(post) {
+      const authorId = post.authorId || post.userUid;
+      const isFollowing = userProfile.following.includes(authorId) ? 1.0 : 0.2;
+      const followScore = isFollowing * FEED_WEIGHTS.FOLLOW;
+
+      const now = Date.now();
+      const postTime = post.createdAt ? post.createdAt.toMillis() : now;
+      const ageInHours = Math.max(0, (now - postTime) / (1000 * 60 * 60));
+      const recencyScore = Math.exp(-0.03 * ageInHours) * FEED_WEIGHTS.RECENCY;
+
+      const likes = Object.keys(post.reactions || {}).length;
+      const comments = post.commentCount || 0;
+      const shares = post.shareCount || 0;
+      const rawEngagement = (likes * 1) + (comments * 2) + (shares * 3);
+      const engagementScore = Math.min(1.0, rawEngagement / 20) * FEED_WEIGHTS.ENGAGEMENT;
+
+      const affinityVal = userProfile.affinity[authorId] || 0;
+      const affinityScore = Math.min(1.0, affinityVal / 10) * FEED_WEIGHTS.AFFINITY;
+
+      return followScore + recencyScore + engagementScore + affinityScore;
+    }
+        // Reels Logic
+    window.openUploadModal = () => document.getElementById('reel-upload-modal').classList.remove('hidden');
+    window.closeUploadModal = () => document.getElementById('reel-upload-modal').classList.add('hidden');
+
+    window.uploadReel = async () => {
+      const videoUrl = document.getElementById('reel-video-url').value.trim();
+      const caption = document.getElementById('reel-caption').value.trim();
+      if (!videoUrl) return alert("Please enter a valid video URL.");
+
+      try {
+        await addDoc(collection(db, "reels"), {
+          videoUrl: videoUrl,
+          caption: caption || "",
+          authorId: currentUser.uid,
+          authorName: currentUser.displayName || currentUser.email.split('@')[0],
+          likes: {},
+          createdAt: serverTimestamp()
+        });
+        document.getElementById('reel-video-url').value = "";
+        document.getElementById('reel-caption').value = "";
+        closeUploadModal();
+        loadReelsFeed();
+      } catch (e) {
+        alert("Upload failed: " + e.message);
+      }
+    };
+
+    window.loadReelsFeed = async () => {
+      const container = document.getElementById('reels-container');
+      if (!container) return;
+
+      try {
+        const q = query(collection(db, "reels"), orderBy("createdAt", "desc"), limit(10));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          container.innerHTML = `<div class="h-full flex items-center justify-center text-gray-400 text-xs">No reels found.</div>`;
+          return;
+        }
+
+        container.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          const reel = docSnap.data();
+          const reelId = docSnap.id;
+          const likesCount = Object.keys(reel.likes || {}).length;
+          const isLiked = currentUser && reel.likes && reel.likes[currentUser.uid];
+
+          const reelHtml = `
+            <div class="h-full w-full snap-start relative flex items-center justify-center bg-black">
+              <video src="${reel.videoUrl}" class="h-full w-full object-cover" loop autoplay muted playsinline onclick="this.paused ? this.play() : this.pause()"></video>
+              <div class="absolute bottom-4 left-4 right-16 text-white z-20 space-y-1">
+                <div class="flex items-center space-x-2">
+                  <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs">${(reel.authorName || 'U')[0].toUpperCase()}</div>
+                  <span class="font-bold text-xs">${reel.authorName}</span>
+                </div>
+                <p class="text-xs text-gray-200 line-clamp-2">${reel.caption}</p>
+              </div>
+              <div class="absolute bottom-6 right-3 z-20 flex flex-col items-center space-y-4 text-white">
+                <button onclick="likeReel('${reelId}')" class="flex flex-col items-center space-y-1">
+                  <div class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center ${isLiked ? 'text-red-500' : 'text-white'}">
+                    <i class="fa-solid fa-heart text-lg"></i>
+                  </div>
+                  <span class="text-[10px] font-semibold">${likesCount}</span>
+                </button>
+              </div>
+            </div>
+          `;
+          container.innerHTML += reelHtml;
+        });
+      } catch (e) {
+        console.error("Error loading reels:", e);
+      }
+    };
+
+    window.likeReel = async (reelId) => {
+      if (!currentUser) return;
+      try {
+        await updateDoc(doc(db, "reels", reelId), { [`likes.${currentUser.uid}`]: true });
+        loadReelsFeed();
+      } catch (e) {
+        console.error("Like reel error:", e);
+      }
+    };
+
+    // Chat Logic
+    window.loadConversationsList = async () => {
+      const container = document.getElementById('conversations-container');
+      if (!container || !currentUser) return;
+      container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">Loading users...</p>`;
+
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        container.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          const userData = docSnap.data();
+          if (userData.uid && userData.uid !== currentUser.uid) {
+            const name = userData.name || "User";
+            container.innerHTML += `
+              <div onclick="openChatRoom('${userData.uid}', '${name}')" class="flex items-center space-x-3 p-3 hover:bg-gray-50 cursor-pointer transition">
+                <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">${name[0].toUpperCase()}</div>
+                <div>
+                  <h4 class="font-semibold text-xs text-gray-800">${name}</h4>
+                  <p class="text-[11px] text-gray-400">Click to start messaging</p>
+                </div>
+              </div>
+            `;
+          }
+        });
+      } catch (e) {
+        console.error("Error loading conversations:", e);
+      }
+    };
+
+    window.openChatRoom = (targetUid, targetName) => {
+      activeChatUser = { uid: targetUid, name: targetName };
+      document.getElementById('chat-list-view').classList.add('hidden');
+      document.getElementById('chat-room-view').classList.remove('hidden');
+      document.getElementById('active-chat-name').innerText = targetName;
+      document.getElementById('active-chat-avatar').innerText = targetName[0].toUpperCase();
+      loadRealtimeMessages();
+    };
+
+    window.closeChatRoom = () => {
+      if (unsubscribeMessages) unsubscribeMessages();
+      activeChatUser = null;
+      document.getElementById('chat-room-view').classList.add('hidden');
+      document.getElementById('chat-list-view').classList.remove('hidden');
+      loadConversationsList();
+    };
+
+    function getChatRoomId(uid1, uid2) {
+      return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+    }
+
+    window.loadRealtimeMessages = () => {
+      const container = document.getElementById('chat-messages-container');
+      if (!container || !currentUser || !activeChatUser) return;
+
+      const roomId = getChatRoomId(currentUser.uid, activeChatUser.uid);
+      const q = query(collection(db, "chats", roomId, "messages"), orderBy("createdAt", "asc"));
+
+      if (unsubscribeMessages) unsubscribeMessages();
+
+      unsubscribeMessages = onSnapshot(q, (snapshot) => {
+        container.innerHTML = "";
+        if (snapshot.empty) {
+          container.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No messages yet.</p>`;
+          return;
+        }
+        snapshot.forEach((docSnap) => {
+          const msg = docSnap.data();
+          const isMe = msg.senderId === currentUser.uid;
+          container.innerHTML += `
+            <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+              <div class="max-w-[75%] px-3 py-2 rounded-2xl text-xs ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'}">
+                <p>${msg.text}</p>
+              </div>
+            </div>
+          `;
+        });
+        container.scrollTop = container.scrollHeight;
+      });
+    };
+
+    window.sendChatMessage = async () => {
+      const input = document.getElementById('chat-message-input');
+      const text = input.value.trim();
+      if (!text || !currentUser || !activeChatUser) return;
+
+      const roomId = getChatRoomId(currentUser.uid, activeChatUser.uid);
+      input.value = "";
+      try {
+        await addDoc(collection(db, "chats", roomId, "messages"), {
+          text: text,
+          senderId: currentUser.uid,
+          createdAt: serverTimestamp()
+        });
+      } catch (e) {
+        console.error("Error sending message:", e);
+      }
+    };
+        // Notifications Logic
+    window.loadNotifications = async () => {
+      const container = document.getElementById('notifications-container');
+      if (!container || !currentUser) return;
+
+      try {
+        const q = query(collection(db, "users", currentUser.uid, "notifications"), orderBy("createdAt", "desc"), limit(20));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          container.innerHTML = `<div class="bg-white p-6 rounded-lg text-center text-xs text-gray-400 border border-gray-200">No new notifications.</div>`;
+          return;
+        }
+
+        container.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          const notif = docSnap.data();
+          const notifId = docSnap.id;
+          const isUnread = !notif.read;
+
+          container.innerHTML += `
+            <div onclick="markNotificationRead('${notifId}')" class="flex items-center justify-between p-3 bg-white rounded-lg border ${isUnread ? 'border-blue-300 bg-blue-50/30' : 'border-gray-200'} shadow-sm text-xs cursor-pointer transition">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                  <i class="fa-solid fa-bell text-blue-600"></i>
+                </div>
+                <div>
+                  <p class="text-gray-800 font-medium">${notif.message}</p>
+                  <span class="text-[10px] text-gray-400">Just now</span>
+                </div>
+              </div>
+              ${isUnread ? '<span class="w-2 h-2 rounded-full bg-blue-600"></span>' : ''}
+            </div>
+          `;
+        });
+      } catch (e) {
+        console.error("Error loading notifications:", e);
+      }
+    };
+
+    window.markNotificationRead = async (notifId) => {
+      if (!currentUser) return;
+      await updateDoc(doc(db, "users", currentUser.uid, "notifications", notifId), { read: true });
+      loadNotifications();
+    };
+
+    window.markAllNotificationsRead = async () => {
+      if (!currentUser) return;
+      const snapshot = await getDocs(collection(db, "users", currentUser.uid, "notifications"));
+      snapshot.forEach(async (docSnap) => {
+        await updateDoc(doc(db, "users", currentUser.uid, "notifications", docSnap.id), { read: true });
+      });
+      loadNotifications();
+    };
+
+    async function sendNotification(targetUserId, message, type) {
+      if (!currentUser || targetUserId === currentUser.uid) return;
+      await addDoc(collection(db, "users", targetUserId, "notifications"), {
+        message: message, type: type, read: false, createdAt: serverTimestamp()
+      });
+    }
+
+    // Profile Page Logic
+    window.loadProfilePage = async () => {
+      if (!currentUser) return;
+      const displayName = currentUser.displayName || currentUser.email.split('@')[0];
+      document.getElementById('profile-name').innerText = displayName;
+      document.getElementById('profile-email').innerText = currentUser.email.endsWith('@mysocial.phone') ? 'Phone User' : currentUser.email;
+      document.getElementById('profile-avatar').innerText = displayName[0].toUpperCase();
+      document.getElementById('profile-following-count').innerText = userProfile.following.length;
+
+      const container = document.getElementById('profile-posts-container');
+      const snapshot = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
+      container.innerHTML = "";
+      let myPostsCount = 0;
+
+      snapshot.forEach((docSnap) => {
+        const post = docSnap.data();
+        if ((post.authorId || post.userUid) === currentUser.uid) {
+          myPostsCount++;
+          container.innerHTML += `
+            <div class="bg-white p-3 rounded-lg border border-gray-200 text-xs space-y-1">
+              <p class="text-gray-800">${post.textContent}</p>
+              <span class="text-[10px] text-gray-400">Likes: ${Object.keys(post.reactions || {}).length}</span>
+            </div>
+          `;
+        }
+      });
+      document.getElementById('profile-posts-count').innerText = myPostsCount;
+      if (myPostsCount === 0) {
+        container.innerHTML = `<div class="bg-white p-6 rounded-lg text-center text-xs text-gray-400 border border-gray-200">You haven't posted anything yet.</div>`;
+      }
+    };
+
+    window.openEditProfileModal = () => {
+      document.getElementById('edit-profile-name').value = currentUser.displayName || "";
+      document.getElementById('edit-profile-modal').classList.remove('hidden');
+    };
+    window.closeEditProfileModal = () => document.getElementById('edit-profile-modal').classList.add('hidden');
+
+    window.updateProfileDetails = async () => {
+      const newName = document.getElementById('edit-profile-name').value.trim();
+      if (!newName) return alert("Please enter a valid name.");
+      try {
+        await updateProfile(currentUser, { displayName: newName });
+        await setDoc(doc(db, "users", currentUser.uid), { name: newName }, { merge: true });
+        document.getElementById('user-display-name').innerText = newName;
+        closeEditProfileModal();
+        loadProfilePage();
+      } catch (e) {
+        alert("Update failed: " + e.message);
+      }
+    };
+
+    // Settings Logic
+    const SETTINGS_DEFAULTS = {
+      isPrivate: false, pushNotif: true, autoplayReels: true, language: 'en',
+      theme: 'system', showOnlineStatus: true, searchable: true, readReceipts: true,
+      emailNotif: false, lowData: false
+    };
+
+    const SETTINGS_TRANSLATIONS = {
+      en: {settingsTitle:'Settings & Privacy',settingsSubtitle:'Manage your account and app preferences.',accountSettings:'Account Settings',editProfile:'Edit Profile & Name',changePassword:'Change Password',changeEmail:'Change Email Address',downloadData:'Download My Profile Data',appearance:'Appearance & Language',language:'App Language',theme:'Theme',privacy:'Privacy',privateAccount:'Private Account Preference',privateHelp:'Requires feed and Firestore rules enforcement.',onlineStatus:'Show online status',searchable:'Allow profile discovery',readReceipts:'Read receipts preference',notifications:'Notifications & Data',pushNotifications:'Push notification preference',emailNotifications:'Email notification preference',autoplay:'Autoplay Reels',lowData:'Data saver preference',help:'Help & About',helpSupport:'Help & Support',privacyNotice:'Privacy information',appVersion:'App version',dangerZone:'Danger Zone',deleteAccount:'Delete Account Permanently',logout:'Log Out'},
+      bn: {settingsTitle:'সেটিংস ও গোপনীয়তা',settingsSubtitle:'আপনার অ্যাকাউন্ট ও অ্যাপের পছন্দ নিয়ন্ত্রণ করুন।',accountSettings:'অ্যাকাউন্ট সেটিংস',editProfile:'প্রোফাইল ও নাম পরিবর্তন',changePassword:'পাসওয়ার্ড পরিবর্তন',changeEmail:'ইমেইল পরিবর্তন',downloadData:'আমার প্রোফাইল ডেটা ডাউনলোড',appearance:'চেহারা ও ভাষা',language:'অ্যাপের ভাষা',theme:'থিম',privacy:'গোপনীয়তা',privateAccount:'প্রাইভেট অ্যাকাউন্ট পছন্দ',privateHelp:'কার্যকর করতে ফিড ও Firestore Rules-এ নিয়ম প্রয়োগ করতে হবে।',onlineStatus:'অনলাইন স্ট্যাটাস দেখান',searchable:'প্রোফাইল খুঁজে পাওয়ার অনুমতি',readReceipts:'মেসেজ পড়ার রসিদ পছন্দ',notifications:'নোটিফিকেশন ও ডেটা',pushNotifications:'পুশ নোটিফিকেশন পছন্দ',emailNotifications:'ইমেইল নোটিফিকেশন পছন্দ',autoplay:'রিলস স্বয়ংক্রিয়ভাবে চালান',lowData:'কম ডেটা ব্যবহারের পছন্দ',help:'সাহায্য ও পরিচিতি',helpSupport:'সাহায্য ও সাপোর্ট',privacyNotice:'গোপনীয়তা তথ্য',appVersion:'অ্যাপ সংস্করণ',dangerZone:'সতর্কতামূলক অংশ',deleteAccount:'অ্যাকাউন্ট স্থায়ীভাবে মুছুন',logout:'লগআউট'}
+    };
+
+    function applySettingsLanguage(lang) {
+      const dictionary = SETTINGS_TRANSLATIONS[lang] || SETTINGS_TRANSLATIONS.en;
+      document.documentElement.lang = lang === 'bn' ? 'bn' : 'en';
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dictionary[key]) el.textContent = dictionary[key];
+      });
+    }
+
+    window.setAppTheme = (theme, persist = true) => {
+      const selected = ['light', 'dark', 'system'].includes(theme) ? theme : 'system';
+      const dark = selected === 'dark' || (selected === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.body.classList.toggle('theme-dark', dark);
+      const selector = document.getElementById('theme-selector');
+      if (selector && selector.value !== selected) selector.value = selected;
+      if (persist) saveUserSetting('theme', selected);
+    };
+
+    async function loadUserSettings() {
+      if (!currentUser) return;
+      let settings = { ...SETTINGS_DEFAULTS };
+      try {
+        const userSnap = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userSnap.exists()) settings = { ...settings, ...(userSnap.data().settings || {}) };
+      } catch (e) {
+        console.error('Error loading settings:', e);
+        try { settings = { ...settings, ...JSON.parse(localStorage.getItem('mysocial-settings-' + currentUser.uid) || '{}') }; } catch (_) {}
+      }
+      const controls = {
+        'setting-private':'isPrivate','setting-notif':'pushNotif','setting-autoplay':'autoplayReels',
+        'setting-online':'showOnlineStatus','setting-searchable':'searchable','setting-readreceipts':'readReceipts',
+        'setting-emailnotif':'emailNotif','setting-lowdata':'lowData'
+      };
+      Object.entries(controls).forEach(([id,key]) => { const el=document.getElementById(id); if(el) el.checked=!!settings[key]; });
+      const lang = settings.language || 'en';
+      const langSelect = document.getElementById('lang-selector'); if (langSelect) langSelect.value = lang;
+      applySettingsLanguage(lang);
+      const themeSelect = document.getElementById('theme-selector'); if (themeSelect) themeSelect.value = settings.theme || (settings.darkMode ? 'dark' : 'system');
+      window.setAppTheme(settings.theme || (settings.darkMode ? 'dark' : 'system'), false);
+    }
+
+    window.saveUserSetting = async (key, value) => {
+      if (!currentUser) return alert('Please log in first.');
+      try {
+        const localKey = 'mysocial-settings-' + currentUser.uid;
+        let localSettings = {};
+        try { localSettings = JSON.parse(localStorage.getItem(localKey) || '{}'); } catch (_) {}
+        localSettings[key] = value;
+        localStorage.setItem(localKey, JSON.stringify(localSettings));
+        await setDoc(doc(db, 'users', currentUser.uid), { settings: { [key]: value } }, { merge: true });
+      } catch (e) {
+        console.error('Failed to save setting:', e);
+        alert('Could not save this setting to your account. Check your Firestore Rules and connection.');
+      }
+    };
+
+    window.changeAppLanguage = async (lang) => {
+      applySettingsLanguage(lang);
+      await saveUserSetting('language', lang);
+    };
+
+    window.toggleDarkMode = (isDark) => window.setAppTheme(isDark ? 'dark' : 'light');
+    if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { const sel=document.getElementById('theme-selector'); if (sel && sel.value === 'system') window.setAppTheme('system', false); });
+
+    window.changeEmailAddress = async () => {
+      if (!currentUser || !currentUser.email || currentUser.email.endsWith('@mysocial.phone')) {
+        return alert('This account does not currently have an email address.');
+      }
+      const newEmail = prompt('Enter your new email address:');
+      if (!newEmail) return;
+      const password = prompt('Enter your current password to verify your identity:');
+      if (!password) return;
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, password);
+        await reauthenticateWithCredential(currentUser, credential);
+        const { verifyBeforeUpdateEmail } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+        await verifyBeforeUpdateEmail(currentUser, newEmail.trim());
+        alert('A verification link has been sent to the new email address.');
+      } catch (e) { alert('Email change failed: ' + e.message); }
+    };
+
+    window.exportMyData = async () => {
+      if (!currentUser) return;
+      try {
+        const snap = await getDoc(doc(db, 'users', currentUser.uid));
+        const payload = { uid: currentUser.uid, displayName: currentUser.displayName || '', email: currentUser.email || '', profile: snap.exists() ? snap.data() : {}, exportedAt: new Date().toISOString() };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'mysocial-my-data.json'; a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) { alert('Could not export profile data: ' + e.message); }
+    };
+
+    window.showAppHelp = () => alert('Mysocial Help & Support\nFor support, contact the app administrator. A verified support email has not been configured in this project.');
+    window.showPrivacyNotice = () => alert('Privacy information\nYour profile and preferences are stored using Firebase. Visibility preferences are not enforced automatically unless the feed logic and Firestore Security Rules also implement them.');
+
+    window.promptChangePassword = async () => {
+      if (!currentUser || !currentUser.email || currentUser.email.endsWith('@mysocial.phone')) return alert('Password changes for phone-based accounts are not supported by this screen yet.');
+      const currentPwd = prompt("Enter your current password:");
+      if (!currentPwd) return;
+      const newPwd = prompt("Enter your new password (at least 6 characters):");
+      if (!newPwd || newPwd.length < 6) return alert("Password must be at least 6 characters.");
+
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, currentPwd);
+        await reauthenticateWithCredential(currentUser, credential);
+        await updatePassword(currentUser, newPwd);
+        alert("Password updated successfully!");
+      } catch (e) {
+        alert("Password update failed: " + e.message);
+      }
+    };
+
+    window.handleAccountDeletion = async () => {
+      if (!currentUser) return;
+      if (!currentUser.email || currentUser.email.endsWith('@mysocial.phone')) return alert('This account type requires a supported reauthentication flow before deletion. No data was deleted.');
+      const confirmText = prompt("Type 'DELETE' to permanently delete your account and all associated data:");
+      if (confirmText !== "DELETE") return;
+
+      const password = prompt("Please enter your password to confirm identity:");
+      if (!password) return;
+
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, password);
+        await reauthenticateWithCredential(currentUser, credential);
+        
+        await deleteDoc(doc(db, "users", currentUser.uid));
+        await deleteUser(currentUser);
+        alert("Account deleted successfully.");
+      } catch (e) {
+        alert("Deletion failed: " + e.message);
+      }
+    };
+        // Feed & Post Creation Logic
+    window.openPostModal = () => document.getElementById('create-post-modal').classList.remove('hidden');
+    window.closePostModal = () => {
+      document.getElementById('create-post-modal').classList.add('hidden');
+      document.getElementById('post-text-input').value = "";
+      document.getElementById('image-upload-input').value = "";
+      selectedImageFile = null;
+      document.getElementById('image-preview-container').classList.add('hidden');
+    };
+
+    window.handleImageSelect = (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      selectedImageFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('image-preview').src = e.target.result;
+        document.getElementById('image-preview-container').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.removeSelectedImage = () => {
+      selectedImageFile = null;
+      document.getElementById('image-upload-input').value = "";
+      document.getElementById('image-preview-container').classList.add('hidden');
+    };
+
+    window.createPost = async () => {
+      const text = document.getElementById('post-text-input').value.trim();
+      if (!text && !selectedImageFile) return alert("Please write something or select an image.");
+
+      try {
+        let imageUrl = "";
+        if (selectedImageFile) {
+          const storageRef = ref(storage, `posts/${currentUser.uid}_${Date.now()}_${selectedImageFile.name}`);
+          const snapshot = await uploadBytes(storageRef, selectedImageFile);
+          imageUrl = await getDownloadURL(snapshot.ref);
+        }
+
+        await addDoc(collection(db, "posts"), {
+          textContent: text,
+          imageUrl: imageUrl,
+          authorId: currentUser.uid,
+          authorName: currentUser.displayName || currentUser.email.split('@')[0],
+          reactions: {},
+          commentCount: 0,
+          shareCount: 0,
+          createdAt: serverTimestamp()
+        });
+
+        closePostModal();
+        loadPersonalizedFeed(true);
+      } catch (e) {
+        alert("Failed to create post: " + e.message);
+      }
+    };
+
+    window.loadPersonalizedFeed = async (reset = false) => {
+      const container = document.getElementById('feed-container');
+      if (!container) return;
+
+      if (reset) {
+        container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">Loading personalized feed...</p>`;
+        lastVisibleDoc = null;
+      }
+
+      try {
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE_SIZE));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty && reset) {
+          container.innerHTML = `<div class="bg-white p-6 rounded-lg text-center text-xs text-gray-400 border border-gray-200">No posts available. Follow users or create a post!</div>`;
+          return;
+        }
+
+        let posts = [];
+        snapshot.forEach((docSnap) => {
+          const post = docSnap.data();
+          const authorId = post.authorId || post.userUid;
+          if (!userProfile.hiddenPosts.includes(docSnap.id)) {
+            posts.push({ id: docSnap.id, ...post, score: calculatePostScore(post) });
+          }
+        });
+
+        posts.sort((a, b) => b.score - a.score);
+
+        if (reset) container.innerHTML = "";
+
+        posts.forEach((post) => {
+          const postId = post.id;
+          const authorName = post.authorName || "User";
+          const likesCount = Object.keys(post.reactions || {}).length;
+          const isLiked = currentUser && post.reactions && post.reactions[currentUser.uid];
+
+          const postHtml = `
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 text-xs overflow-hidden space-y-2 p-3">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">${authorName[0].toUpperCase()}</div>
+                  <div>
+                    <h4 class="font-bold text-gray-800">${authorName}</h4>
+                    <span class="text-[10px] text-gray-400">Personalized Feed</span>
+                  </div>
+                </div>
+                <button onclick="hidePost('${postId}')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+
+              ${post.textContent ? `<p class="text-gray-700 leading-relaxed">${post.textContent}</p>` : ''}
+              ${post.imageUrl ? `<img src="${post.imageUrl}" class="w-full h-auto rounded-lg max-h-80 object-cover" />` : ''}
+
+              <div class="flex justify-between items-center pt-2 border-t border-gray-100 text-gray-500 font-semibold">
+                <button onclick="toggleLikePost('${postId}')" class="flex items-center space-x-1 ${isLiked ? 'text-blue-600' : 'hover:text-blue-600'} transition">
+                  <i class="fa-solid fa-thumbs-up"></i>
+                  <span>Like (${likesCount})</span>
+                </button>
+                <button onclick="sharePost('${postId}')" class="hover:text-blue-600 transition">
+                  <i class="fa-solid fa-share"></i> Share
+                </button>
+              </div>
+            </div>
+          `;
+          container.innerHTML += postHtml;
+        });
+      } catch (e) {
+        console.error("Error loading feed:", e);
+        container.innerHTML = `<p class="text-center text-xs text-red-400 py-6">Failed to load feed.</p>`;
+      }
+    };
+
+    window.toggleLikePost = async (postId) => {
+      if (!currentUser) return;
+      try {
+        const postRef = doc(db, "posts", postId);
+        const postSnap = await getDoc(postRef);
+        if (postSnap.exists()) {
+          const postData = postSnap.data();
+          const reactions = postData.reactions || {};
+          if (reactions[currentUser.uid]) {
+            delete reactions[currentUser.uid];
+          } else {
+            reactions[currentUser.uid] = true;
+            sendNotification(postData.authorId || postData.userUid, `${currentUser.displayName || 'Someone'} liked your post.`, 'like');
+          }
+          await updateDoc(postRef, { reactions: reactions });
+          loadPersonalizedFeed(false);
+        }
+      } catch (e) {
+        console.error("Error toggling like:", e);
+      }
+    };
+
+    window.hidePost = async (postId) => {
+      if (!currentUser) return;
+      userProfile.hiddenPosts.push(postId);
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid), { hiddenPosts: arrayUnion(postId) });
+        loadPersonalizedFeed(false);
+      } catch (e) {
+        console.error("Error hiding post:", e);
+      }
+    };
+
+    window.sharePost = async (postId) => {
+      try {
+        await updateDoc(doc(db, "posts", postId), { shareCount: increment(1) });
+        alert("Post link copied to clipboard!");
+      } catch (e) {
+        console.error("Error sharing post:", e);
+      }
+    };
+
+    // Tab Switcher
+    window.switchTab = (tabName) => {
+      const tabs = ['home', 'friends', 'reels', 'chat', 'notifications', 'profile', 'settings'];
+      tabs.forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`nav-${t}`);
+        if (view) view.classList.add('hidden');
+        if (btn) btn.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+      });
+
+      const activeView = document.getElementById(`view-${tabName}`);
+      const activeBtn = document.getElementById(`nav-${tabName}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) activeBtn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+
+      if (tabName === 'home') loadPersonalizedFeed(false);
+      if (tabName === 'friends') loadSuggestedUsers();
+      if (tabName === 'reels') loadReelsFeed();
+      if (tabName === 'chat') loadConversationsList();
+      if (tabName === 'notifications') loadNotifications();
+      if (tabName === 'profile') loadProfilePage();
+      if (tabName === 'settings') loadUserSettings();
+    };
+
+    // Initial default tab state
+    switchTab('home');
+  </script>
+</body>
+</html>
